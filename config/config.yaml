@@ -1,0 +1,33 @@
+environment: dev
+
+name: core
+
+http:
+  host: 0.0.0.0
+  port: 8080
+  required: true
+
+grpc:
+  host: 0.0.0.0
+  port: 3000
+  required: true
+
+postgres:
+  required: true
+  max_conns: 10
+  min_conns: 3
+  max_idle_conn_time: 10m
+
+redis:
+  required: true
+  pool_size: 10
+  min_idle_conns: 3
+  max_idle_conns: 10
+  read_timeout: 1m
+
+nats:
+  required: true
+  dsn: localhost:4222
+  queue: learning_platform
+
+env:
