@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Rasikrr/core/enum"
+	"github.com/Rasikrr/core/interfaces"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/joho/godotenv"
 	"os"
@@ -48,7 +49,7 @@ func Parse() (Config, error) {
 }
 
 func (c *Config) Validate() error {
-	for _, v := range []Validatable{
+	for _, v := range []interfaces.Validatable{
 		c.HTTP,
 		c.GRPC,
 		c.Postgres,
