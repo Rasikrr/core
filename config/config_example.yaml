@@ -19,14 +19,14 @@ postgres:
   max_idle_conn_time: 10m
 
 redis:
-  required: true
+  required: false
   pool_size: 10
   min_idle_conns: 3
   max_idle_conns: 10
   read_timeout: 1m
 
 nats:
-  required: true
+  required: false
   dsn: localhost:4222
   queue: learning_platform
 

@@ -32,8 +32,8 @@ type App struct {
 	closers  Closers
 }
 
-func NewApp(ctx context.Context, configPath string) *App {
-	cfg, err := config.Parse(configPath)
+func NewApp(ctx context.Context) *App {
+	cfg, err := config.Parse()
 	if err != nil {
 		log.Fatalf("failed to parse config: %v", err)
 	}

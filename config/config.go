@@ -1,10 +1,20 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"github.com/Rasikrr/core/enum"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/joho/godotenv"
+	"os"
+)
+
+const (
+	configEnv = "CONFIG"
+)
+
+var (
+	errConfigNotFound = errors.New("config not found")
 )
 
 type Config struct {
@@ -18,10 +28,15 @@ type Config struct {
 	Variables   Variables        `yaml:"env"`
 }
 
-func Parse(configFile string) (Config, error) {
+func Parse() (Config, error) {
 	if err := godotenv.Load(); err != nil {
 		return Config{}, err
 	}
+	configFile, ok := os.LookupEnv(configEnv)
+	if !ok || configFile == "" {
+		return Config{}, errConfigNotFound
+	}
+
 	var config Config
 	if err := cleanenv.ReadConfig(configFile, &config); err != nil {
 		return Config{}, err
