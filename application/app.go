@@ -115,28 +115,28 @@ func (a *App) GracefulShutdown(ctx context.Context, stopChan chan struct{}) {
 
 func (a *App) GrpcServer() *coreGrpc.Server {
 	if a.grpcServer == nil {
-		log.Fatalf("grpc server is not initialized or not required")
+		log.Fatalf("grpc server is not initialized or not required, please check your config")
 	}
 	return a.grpcServer
 }
 
 func (a *App) Postgres() *database.Postgres {
 	if a.postgres == nil {
-		log.Fatalf("postgres is not initialized or not required")
+		log.Fatalf("postgres is not initialized or not required. please check your config")
 	}
 	return a.postgres
 }
 
 func (a *App) HTTPServer() *http.Server {
 	if a.httpServer == nil {
-		log.Fatalf("http server is not initialized or not required")
+		log.Fatalf("http server is not initialized or not required. please check your config")
 	}
 	return a.httpServer
 }
 
 func (a *App) Redis() redis.Cache {
 	if a.redis == nil {
-		log.Fatalf("redis is not initialized or not required")
+		log.Fatalf("redis is not initialized or not required. please check your config")
 	}
 	return a.redis
 }
@@ -147,14 +147,14 @@ func (a *App) Config() *config.Config {
 
 func (a *App) NATSPublisher() nats.Publisher {
 	if a.publisher == nil {
-		log.Fatalf("natsis not initialized or not required")
+		log.Fatalf("nats is not initialized or not required. please check your config")
 	}
 	return a.publisher
 }
 
 func (a *App) NATSSubscriber() nats.Subscriber {
 	if a.subscriber == nil {
-		log.Fatalf("natsis not initialized or not required")
+		log.Fatalf("nats is not initialized or not required. please check your config")
 	}
 	return a.subscriber
 }
