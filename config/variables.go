@@ -1,10 +1,16 @@
 package config
 
 import (
+	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"time"
+)
+
+var (
+	errVariableNotFound = errors.New("variable is not required and not found, please check your config")
 )
 
 type Variable struct {
@@ -21,6 +27,11 @@ func (v *Variable) Validate() error {
 		if val, ok := os.LookupEnv(v.EnvName); ok {
 			v.Value = val
 		}
+	}
+
+	if !v.Required {
+		log.Printf("variable %s is not required", v.Name)
+		return nil
 	}
 
 	if v.Required && v.Value == nil {
@@ -152,6 +163,11 @@ func (v Variables) GetBool(name string) (bool, error) {
 	if !ok {
 		return false, fmt.Errorf("variable %s not found", name)
 	}
+
+	if !val.Required {
+		return false, errVariableNotFound
+	}
+
 	parsed, ok := val.Value.(bool)
 	if !ok {
 		return false, fmt.Errorf("variable %s is not bool", name)

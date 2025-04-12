@@ -31,12 +31,14 @@ func GenerateJwt(ses *session.Session, ttl time.Duration, isRefresh bool) (strin
 	claims["account_role"] = ses.AccountRole().String()
 	claims["is_refresh"] = isRefresh
 	claims["exp"] = time.Now().UTC().Add(ttl).Unix()
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims(claims))
 
 	tokenString, err := token.SignedString([]byte(secret))
 	if err != nil {
 		return "", err
 	}
+
 	return tokenString, nil
 }
 
@@ -50,13 +52,16 @@ func ParseJwt(tokenString string) (*session.Session, bool, error) {
 		}
 		return []byte(secret), nil
 	})
+
 	if err != nil {
 		return nil, false, err
 	}
+
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
 		return nil, false, errInvalidToken
 	}
+
 	return getSession(claims)
 }
 

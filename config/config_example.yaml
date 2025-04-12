@@ -1,6 +1,6 @@
-environment: dev
+environment: dev # dev, prod
 
-name: core
+name: core # name of application
 
 http:
   host: 0.0.0.0
@@ -28,6 +28,41 @@ redis:
 nats:
   required: false
   dsn: localhost:4222
-  queue: learning_platform
+  queue: example_queue # It is like load balancer, read more about it here: https://docs.nats.io/nats-concepts/core-nats/queue
+
+
+# If you not provide 'required' field or set it to false, then variable will be ignored
+# 'env_name' is name of variable in .env file.
+# !!! IMPORTANT !!! .env variables has more priority than config variables
+# Available variable types: 'string', 'int', 'float', 'bool', 'duration'
 
 env:
+  example_string:
+    type: "string"
+    value: "example"
+    env_name: "EXAMPLE_STRING"
+    required: true
+
+  example_float:
+    type: "float"
+    value: 1.0
+    env_name: "EXAMPLE_FLOAT"
+    required: true
+
+  example_int:
+    type: "int"
+    value: 1
+    env_name: "EXAMPLE_INT"
+    required: true
+
+  example_bool:
+    type: "bool"
+    value: true
+    env_name: "EXAMPLE_BOOL"
+    required: true
+
+  example_duration:
+    type: "duration"
+    value: "1s"
+    env_name: "EXAMPLE_DURATION"
+    required: true
