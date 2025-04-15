@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Rasikrr/core/config"
+	"github.com/Rasikrr/core/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"log"
 	"net"
 	"runtime/debug"
 )
@@ -32,12 +32,12 @@ func NewServer(cfg config.GRPCConfig) *Server {
 	}
 }
 
-func (s *Server) Start(_ context.Context) error {
+func (s *Server) Start(ctx context.Context) error {
 	lis, err := net.Listen(TCP, s.addr(s.host))
 	if err != nil {
 		return err
 	}
-	log.Println("starting grpc server")
+	log.Info(ctx, "starting grpc server")
 	if err := s.server.Serve(lis); err != nil {
 		if errors.Is(err, grpc.ErrServerStopped) {
 			return nil
@@ -47,9 +47,9 @@ func (s *Server) Start(_ context.Context) error {
 	return nil
 }
 
-func (s *Server) Close(_ context.Context) error {
+func (s *Server) Close(ctx context.Context) error {
 	s.server.GracefulStop()
-	log.Println("grpc server closed")
+	log.Info(ctx, "grpc server closed")
 	return nil
 }
 
@@ -74,9 +74,10 @@ func streamPanicRecoveryInterceptor(
 	_ *grpc.StreamServerInfo,
 	handler grpc.StreamHandler,
 ) error {
+	ctx := ss.Context()
 	defer func() {
 		if r := recover(); r != nil {
-			log.Printf("Recovered from panic in stream: %v\n%s", r, debug.Stack())
+			log.Debugf(ctx, "Recovered from panic in stream: %v\n%s", r, debug.Stack())
 		}
 	}()
 	return handler(srv, ss)
@@ -90,7 +91,7 @@ func unaryPanicRecoveryInterceptor(
 ) (resp interface{}, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Printf("Recovered from panic in unary: %v\n%s", r, debug.Stack())
+			log.Debugf(ctx, "Recovered from panic in unary: %v\n%s", r, debug.Stack())
 			err = status.Errorf(codes.Internal, "internal server error")
 		}
 	}()

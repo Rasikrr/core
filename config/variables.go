@@ -1,9 +1,10 @@
 package config
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"log"
+	"github.com/Rasikrr/core/log"
 	"os"
 	"strconv"
 	"time"
@@ -23,6 +24,7 @@ type Variable struct {
 
 // nolint: funlen
 func (v *Variable) Validate() error {
+	ctx := context.Background()
 	if v.EnvName != "" {
 		if val, ok := os.LookupEnv(v.EnvName); ok {
 			v.Value = val
@@ -30,7 +32,7 @@ func (v *Variable) Validate() error {
 	}
 
 	if !v.Required {
-		log.Printf("variable %s is not required", v.Name)
+		log.Debugf(ctx, "variable %s is not required", v.Name)
 		return nil
 	}
 

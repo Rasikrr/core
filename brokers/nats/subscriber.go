@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Rasikrr/core/interfaces"
-	"log"
+	"github.com/Rasikrr/core/log"
 
 	"github.com/nats-io/nats.go"
 )
@@ -69,7 +69,7 @@ func (s *subscriber) Subscribe(ctx context.Context, subject string, handler Subs
 		defer func() {
 			err = sub.Unsubscribe()
 			if err != nil {
-				log.Printf("unsubscribe error: %v\n", err)
+				log.Errorf(ctx, "unsubscribe error: %v", err)
 			}
 		}()
 
@@ -84,10 +84,10 @@ func (s *subscriber) Subscribe(ctx context.Context, subject string, handler Subs
 					if errors.Is(err, context.Canceled) {
 						return
 					}
-					log.Println("context canceled")
+					log.Error(ctx, "context canceled")
 					continue
 				}
-				log.Println("new message")
+				log.Debug(ctx, "new message")
 				handler.Handle(m)
 			}
 		}
@@ -96,9 +96,9 @@ func (s *subscriber) Subscribe(ctx context.Context, subject string, handler Subs
 	return nil
 }
 
-func (s *subscriber) SubscribeQueue(_ context.Context, subject string, queue string, handler SubscriberHandler) error {
+func (s *subscriber) SubscribeQueue(ctx context.Context, subject string, queue string, handler SubscriberHandler) error {
 	_, err := s.nc.QueueSubscribe(subject, queue, handler.Handle)
-	log.Printf("subscribed to subject: %s, queue: %s\n", subject, queue)
+	log.Debugf(ctx, "subscribed to subject: %s, queue: %s\n", subject, queue)
 	if err != nil {
 		return err
 	}
@@ -114,8 +114,8 @@ func (s *subscriber) Start(ctx context.Context) error {
 	return nil
 }
 
-func (s *subscriber) Close(_ context.Context) error {
+func (s *subscriber) Close(ctx context.Context) error {
 	s.nc.Close()
-	log.Println("nats subscriber closed")
+	log.Info(ctx, "nats subscriber closed")
 	return nil
 }

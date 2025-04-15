@@ -2,7 +2,7 @@ package http
 
 import (
 	"fmt"
-	"log"
+	"github.com/Rasikrr/core/log"
 	"net/http"
 )
 
@@ -39,9 +39,10 @@ func NewRecoverMiddleware() Middleware {
 
 func (m *RecoverMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		defer func() {
 			if err := recover(); err != nil {
-				log.Printf("panic while handling request: %v", err)
+				log.Debugf(ctx, "panic while handling request: %v", err)
 				http.Error(w, fmt.Sprintf("panic: %v", err), http.StatusInternalServerError)
 				return
 			}

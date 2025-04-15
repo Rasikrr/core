@@ -7,10 +7,9 @@ import (
 	"github.com/Rasikrr/core/database"
 	coreGrpc "github.com/Rasikrr/core/grpc"
 	"github.com/Rasikrr/core/http"
+	"github.com/Rasikrr/core/log"
 	"github.com/Rasikrr/core/redis"
-
 	"golang.org/x/sync/errgroup"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -35,7 +34,7 @@ type App struct {
 func NewApp(ctx context.Context) *App {
 	cfg, err := config.Parse()
 	if err != nil {
-		log.Fatalf("failed to parse config: %v", err)
+		log.Fatalf(ctx, "failed to parse config: %v", err)
 	}
 	return NewAppWithConfig(ctx, &cfg)
 }
@@ -45,20 +44,23 @@ func NewAppWithConfig(ctx context.Context, cfg *config.Config) *App {
 		name:   cfg.Name(),
 		config: cfg,
 	}
+	app.InitLogger()
+	log.Info(context.Background(), "logger initialized")
+
 	if err := app.initPostgres(ctx); err != nil {
-		log.Fatalf("failed to init postgres: %v", err)
+		log.Fatalf(ctx, "failed to init postgres: %v", err)
 	}
 	if err := app.initRedis(ctx); err != nil {
-		log.Fatalf("failed to init redis: %v", err)
+		log.Fatalf(ctx, "failed to init redis: %v", err)
 	}
 	if err := app.initGRPC(ctx); err != nil {
-		log.Fatalf("failed to init grpc: %v", err)
+		log.Fatalf(ctx, "failed to init grpc: %v", err)
 	}
 	if err := app.initHTTP(ctx); err != nil {
-		log.Fatalf("failed to init http: %v", err)
+		log.Fatalf(ctx, "failed to init http: %v", err)
 	}
 	if err := app.initNats(ctx); err != nil {
-		log.Fatalf("failed to init nats: %v", err)
+		log.Fatalf(ctx, "failed to init nats: %v", err)
 	}
 
 	return app
@@ -66,7 +68,6 @@ func NewAppWithConfig(ctx context.Context, cfg *config.Config) *App {
 
 func (a *App) Start(ctx context.Context) error {
 	a.initSubscribers(ctx)
-
 	stopChan := make(chan struct{})
 	go a.GracefulShutdown(ctx, stopChan)
 	if err := a.start(ctx); err != nil {
@@ -79,8 +80,11 @@ func (a *App) Start(ctx context.Context) error {
 
 func (a *App) start(ctx context.Context) error {
 	defer func() {
-		if err := recover(); err != nil {
-			log.Printf("panic recovered: %v", err)
+		if e := recover(); e != nil {
+			if err, ok := e.(error); ok {
+				log.Error(ctx, "panic in start", log.Err(err))
+			}
+			log.Error(ctx, "panic in start", log.Any("panic", e))
 		}
 	}()
 	g := errgroup.Group{}
@@ -108,35 +112,35 @@ func (a *App) GracefulShutdown(ctx context.Context, stopChan chan struct{}) {
 	<-sigChan
 
 	if err := a.Close(ctx); err != nil {
-		log.Printf("error while closing app: %v", err)
+		log.Errorf(ctx, "error while closing app: %v", err)
 	}
 	close(stopChan)
 }
 
 func (a *App) GrpcServer() *coreGrpc.Server {
 	if a.grpcServer == nil {
-		log.Fatalf("grpc server is not initialized or not required, please check your config")
+		log.Fatalf(context.Background(), "grpc server is not initialized or not required, please check your config")
 	}
 	return a.grpcServer
 }
 
 func (a *App) Postgres() *database.Postgres {
 	if a.postgres == nil {
-		log.Fatalf("postgres is not initialized or not required. please check your config")
+		log.Fatalf(context.Background(), "postgres is not initialized or not required. please check your config")
 	}
 	return a.postgres
 }
 
 func (a *App) HTTPServer() *http.Server {
 	if a.httpServer == nil {
-		log.Fatalf("http server is not initialized or not required. please check your config")
+		log.Fatalf(context.Background(), "http server is not initialized or not required. please check your config")
 	}
 	return a.httpServer
 }
 
 func (a *App) Redis() redis.Cache {
 	if a.redis == nil {
-		log.Fatalf("redis is not initialized or not required. please check your config")
+		log.Fatalf(context.Background(), "redis is not initialized or not required. please check your config")
 	}
 	return a.redis
 }
@@ -147,14 +151,14 @@ func (a *App) Config() *config.Config {
 
 func (a *App) NATSPublisher() nats.Publisher {
 	if a.publisher == nil {
-		log.Fatalf("nats is not initialized or not required. please check your config")
+		log.Fatalf(context.Background(), "nats is not initialized or not required. please check your config")
 	}
 	return a.publisher
 }
 
 func (a *App) NATSSubscriber() nats.Subscriber {
 	if a.subscriber == nil {
-		log.Fatalf("nats is not initialized or not required. please check your config")
+		log.Fatalf(context.Background(), "nats is not initialized or not required. please check your config")
 	}
 	return a.subscriber
 }

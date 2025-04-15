@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	configEnv = "CONFIG"
+	configPathEnv = "CONFIG_PATH"
 )
 
 var (
@@ -33,7 +33,8 @@ func Parse() (Config, error) {
 	if err := godotenv.Load(); err != nil {
 		return Config{}, err
 	}
-	configFile, ok := os.LookupEnv(configEnv)
+
+	configFile, ok := os.LookupEnv(configPathEnv)
 	if !ok || configFile == "" {
 		return Config{}, errConfigNotFound
 	}
@@ -42,13 +43,15 @@ func Parse() (Config, error) {
 	if err := cleanenv.ReadConfig(configFile, &config); err != nil {
 		return Config{}, err
 	}
-	if err := config.Variables.Validate(); err != nil {
+
+	if err := config.validate(); err != nil {
 		return Config{}, err
 	}
+
 	return config, nil
 }
 
-func (c *Config) Validate() error {
+func (c *Config) validate() error {
 	for _, v := range []interfaces.Validatable{
 		c.HTTP,
 		c.GRPC,

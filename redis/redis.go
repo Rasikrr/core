@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Rasikrr/core/config"
+	"github.com/Rasikrr/core/log"
 	redis "github.com/redis/go-redis/v9"
-	"log"
 	"strings"
 	"time"
 )
@@ -45,8 +45,8 @@ func NewRedisCache(ctx context.Context, cfg config.RedisConfig, prefix string) (
 	}, nil
 }
 
-func (r *cache) Close(_ context.Context) error {
-	log.Println("closing redis")
+func (r *cache) Close(ctx context.Context) error {
+	log.Info(ctx, "closing redis")
 	return r.client.Close()
 }
 

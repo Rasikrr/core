@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Rasikrr/core/config"
+	"github.com/Rasikrr/core/log"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"log"
 	"net/http"
 	"time"
 )
@@ -57,8 +57,8 @@ func (s *Server) WithMiddlewares(middlewares ...Middleware) {
 	s.middlewares = append(s.middlewares, middlewares...)
 }
 
-func (s *Server) Start(_ context.Context) error {
-	log.Println("starting http server")
+func (s *Server) Start(ctx context.Context) error {
+	log.Info(ctx, "starting http server")
 	if err := s.srv.ListenAndServe(); err != nil {
 		if errors.Is(err, http.ErrServerClosed) {
 			return nil
@@ -80,10 +80,10 @@ func (s *Server) registerMiddlewares() {
 
 func (s *Server) Close(ctx context.Context) error {
 	if err := s.srv.Shutdown(ctx); err != nil {
-		log.Printf("HTTP server shutdown error: %v", err)
+		log.Infof(ctx, "HTTP server shutdown error: %v", err)
 		return fmt.Errorf("HTTP server shutdown error: %w", err)
 	}
-	log.Println("HTTP server closed")
+	log.Info(ctx, "HTTP server closed")
 	return nil
 }
 

@@ -3,11 +3,11 @@ package database
 import (
 	"context"
 	"github.com/Rasikrr/core/config"
+	"github.com/Rasikrr/core/log"
 	"github.com/avast/retry-go"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"log"
 	"time"
 )
 
@@ -37,7 +37,7 @@ func NewPostgres(ctx context.Context, cfg config.PostgresConfig) (*Postgres, err
 		retry.Attempts(3),
 		retry.Delay(1*time.Second),
 		retry.OnRetry(func(_ uint, err error) {
-			log.Printf("Failed to connect to database: %v\n", err)
+			log.Warnf(ctx, "Failed to connect to database: %v\n", err)
 		}),
 	)
 
@@ -57,7 +57,7 @@ func (p *Postgres) Query(ctx context.Context, sql string, args ...any) (pgx.Rows
 	start := time.Now()
 	defer func() {
 		elapsed := time.Since(start)
-		log.Printf("Query: %s; elapsed: %v; args: %v\n", sql, elapsed, args)
+		log.Debugf(ctx, "Query: %s; elapsed: %v; args: %v\n", sql, elapsed, args)
 	}()
 	return p.pool.Query(ctx, sql, args...)
 }
@@ -66,7 +66,7 @@ func (p *Postgres) Exec(ctx context.Context, sql string, args ...any) (pgconn.Co
 	start := time.Now()
 	defer func() {
 		elapsed := time.Since(start)
-		log.Printf("Exec: %s; elapsed: %v; args: %v\n", sql, elapsed, args)
+		log.Debugf(ctx, "Exec: %s; elapsed: %v; args: %v\n", sql, elapsed, args)
 	}()
 	return p.pool.Exec(ctx, sql, args...)
 }
@@ -75,7 +75,7 @@ func (p *Postgres) QueryRow(ctx context.Context, sql string, args ...any) pgx.Ro
 	start := time.Now()
 	defer func() {
 		elapsed := time.Since(start)
-		log.Printf("QueryRow: %s; elapsed: %v; args: %v\n", sql, elapsed, args)
+		log.Debugf(ctx, "QueryRow: %s; elapsed: %v; args: %v\n", sql, elapsed, args)
 	}()
 	return p.pool.QueryRow(ctx, sql, args...)
 }
@@ -84,7 +84,7 @@ func (p *Postgres) BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx
 	start := time.Now()
 	defer func() {
 		elapsed := time.Since(start)
-		log.Printf("BeginTx: %v; elapsed: %v\n", txOptions, elapsed)
+		log.Debugf(ctx, "BeginTx: %v; elapsed: %v\n", txOptions, elapsed)
 	}()
 	return p.pool.BeginTx(ctx, txOptions)
 }
@@ -93,7 +93,7 @@ func (p *Postgres) Begin(ctx context.Context) (pgx.Tx, error) {
 	start := time.Now()
 	defer func() {
 		elapsed := time.Since(start)
-		log.Printf("Begin: %v; elapsed: %v\n", nil, elapsed)
+		log.Debugf(ctx, "Begin: %v; elapsed: %v\n", nil, elapsed)
 	}()
 	return p.pool.Begin(ctx)
 }
@@ -122,7 +122,7 @@ func (p *Postgres) CopyFrom(ctx context.Context, tableName pgx.Identifier, colum
 	start := time.Now()
 	defer func() {
 		elapsed := time.Since(start)
-		log.Printf("CopyFrom: %s; elapsed: %v; args: %v\n", tableName, elapsed, columnNames)
+		log.Debugf(ctx, "CopyFrom: %s; elapsed: %v; args: %v\n", tableName, elapsed, columnNames)
 	}()
 	return p.pool.CopyFrom(ctx, tableName, columnNames, rowSrc)
 }
@@ -131,13 +131,13 @@ func (p *Postgres) SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults
 	start := time.Now()
 	defer func() {
 		elapsed := time.Since(start)
-		log.Printf("SendBatch: %v; elapsed: %v\n", b, elapsed)
+		log.Debugf(ctx, "SendBatch: %v; elapsed: %v\n", b, elapsed)
 	}()
 	return p.pool.SendBatch(ctx, b)
 }
 
-func (p *Postgres) Close(_ context.Context) error {
+func (p *Postgres) Close(ctx context.Context) error {
 	p.pool.Close()
-	log.Println("Postgres closed gracefully")
+	log.Info(ctx, "Postgres closed gracefully")
 	return nil
 }

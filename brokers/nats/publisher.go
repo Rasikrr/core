@@ -3,9 +3,9 @@ package nats
 import (
 	"context"
 	"github.com/Rasikrr/core/interfaces"
+	"github.com/Rasikrr/core/log"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
-	"log"
 )
 
 type Publisher interface {
@@ -44,8 +44,8 @@ func (p *publisher) Publish(_ context.Context, subject string, m proto.Message) 
 	return p.conn.PublishMsg(msg)
 }
 
-func (p *publisher) Close(_ context.Context) error {
+func (p *publisher) Close(ctx context.Context) error {
 	p.conn.Close()
-	log.Println("nats publisher closed")
+	log.Info(ctx, "nats publisher closed")
 	return nil
 }
