@@ -66,3 +66,12 @@ env:
     value: "1s"
     env_name: "EXAMPLE_DURATION"
     required: true
+
+# This is example of variable that do not have value in config but in .env file.
+# by env_name you can get value from .env file
+# !!! IMPORTANT !!! if tou want to add .env variable, first you need to add it to config.yaml
+# Second: you need to declare env_name in config.yaml
+  ex_string:
+    type: "string"
+    env_name: "EX_STRING"
+    required: false

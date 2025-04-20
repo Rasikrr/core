@@ -67,6 +67,16 @@ func (r *cache) Set(ctx context.Context, key string, value any) error {
 	return r.client.Set(ctx, k, value, 0).Err()
 }
 
+func (r *cache) Mset(ctx context.Context, keyValues ...any) error {
+	if len(keyValues)%2 != 0 {
+		return errors.New("invalid keyValues: must be even")
+	}
+	for i := 0; i < len(keyValues); i += 2 {
+		keyValues[i] = r.getKey(keyValues[i].(string))
+	}
+	return r.client.MSet(ctx, keyValues...).Err()
+}
+
 func (r *cache) SetWithExpiration(ctx context.Context, key string, value any, expiration time.Duration) error {
 	k := r.getKey(key)
 	return r.client.Set(ctx, k, value, expiration).Err()

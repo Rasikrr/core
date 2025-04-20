@@ -15,6 +15,7 @@ type Cache interface {
 	interfaces.Closer
 	Get(ctx context.Context, key string) (any, error)
 	Set(ctx context.Context, key string, value any) error
+	Mset(ctx context.Context, keyValues ...any) error
 	Exists(ctx context.Context, key string) (bool, error)
 	Expire(ctx context.Context, key string, expiration time.Duration) error
 	SetWithExpiration(ctx context.Context, key string, value any, expiration time.Duration) error
