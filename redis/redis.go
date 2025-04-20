@@ -79,7 +79,7 @@ func (r *cache) Set(ctx context.Context, key string, value any) error {
 	return r.client.Set(ctx, k, value, 0).Err()
 }
 
-func (r *cache) Mset(ctx context.Context, keyValues ...any) error {
+func (r *cache) MSet(ctx context.Context, keyValues ...any) error {
 	if len(keyValues)%2 != 0 {
 		return errors.New("invalid keyValues: must be even")
 	}
