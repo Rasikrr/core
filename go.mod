@@ -14,7 +14,7 @@ require (
 	github.com/mailru/easyjson v0.9.0
 	github.com/nats-io/nats.go v1.41.0
 	github.com/redis/go-redis/v9 v9.7.1
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.10.0
 	golang.org/x/net v0.34.0
 	golang.org/x/sync v0.13.0
 	google.golang.org/grpc v1.71.0
@@ -34,6 +34,7 @@ require (
 	github.com/nats-io/nkeys v0.4.9 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/samber/lo v1.49.1 // indirect
 	golang.org/x/crypto v0.32.0 // indirect
 	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/text v0.23.0 // indirect

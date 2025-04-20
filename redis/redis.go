@@ -7,6 +7,7 @@ import (
 	"github.com/Rasikrr/core/config"
 	"github.com/Rasikrr/core/log"
 	redis "github.com/redis/go-redis/v9"
+	"github.com/samber/lo"
 	"strings"
 	"time"
 )
@@ -60,6 +61,17 @@ func (r *cache) Get(ctx context.Context, key string) (any, error) {
 		return nil, err
 	}
 	return val, nil
+}
+
+func (r *cache) MGet(ctx context.Context, keys ...string) ([]any, error) {
+	keys = lo.Map(keys, func(k string, _ int) string {
+		return r.getKey(k)
+	})
+	values, err := r.client.MGet(ctx, keys...).Result()
+	if err != nil {
+		return nil, err
+	}
+	return values, nil
 }
 
 func (r *cache) Set(ctx context.Context, key string, value any) error {

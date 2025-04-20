@@ -14,6 +14,7 @@ var (
 type Cache interface {
 	interfaces.Closer
 	Get(ctx context.Context, key string) (any, error)
+	MGet(ctx context.Context, keys ...string) ([]any, error)
 	Set(ctx context.Context, key string, value any) error
 	Mset(ctx context.Context, keyValues ...any) error
 	Exists(ctx context.Context, key string) (bool, error)
