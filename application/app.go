@@ -9,7 +9,6 @@ import (
 	"github.com/Rasikrr/core/http"
 	"github.com/Rasikrr/core/log"
 	"github.com/Rasikrr/core/redis"
-	"golang.org/x/sync/errgroup"
 	"os"
 	"os/signal"
 	"syscall"
@@ -69,7 +68,7 @@ func NewAppWithConfig(ctx context.Context, cfg *config.Config) *App {
 func (a *App) Start(ctx context.Context) error {
 	a.initSubscribers(ctx)
 	stopChan := make(chan struct{})
-	go a.GracefulShutdown(ctx, stopChan)
+	go a.gracefulShutdown(ctx, stopChan)
 	if err := a.start(ctx); err != nil {
 		return err
 	}
@@ -87,13 +86,21 @@ func (a *App) start(ctx context.Context) error {
 			log.Error(ctx, "panic in start", log.Any("panic", e))
 		}
 	}()
-	g := errgroup.Group{}
+
+	errCh := make(chan error, len(a.starters.starters))
+
 	for _, s := range a.starters.starters {
-		g.Go(func() error {
-			return s.Start(ctx)
-		})
+		go func() {
+			errCh <- s.Start(ctx)
+		}()
 	}
-	return g.Wait()
+
+	select {
+	case err := <-errCh:
+		return err
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
 
 func (a *App) Close(ctx context.Context) error {
@@ -105,7 +112,7 @@ func (a *App) Close(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) GracefulShutdown(ctx context.Context, stopChan chan struct{}) {
+func (a *App) gracefulShutdown(ctx context.Context, stopChan chan struct{}) {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 
