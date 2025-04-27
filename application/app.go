@@ -95,12 +95,22 @@ func (a *App) start(ctx context.Context) error {
 		}()
 	}
 
-	select {
-	case err := <-errCh:
-		return err
-	case <-ctx.Done():
-		return ctx.Err()
+	log.Debug(ctx, "len of starters", log.Int("len", len(a.starters.starters)))
+
+	for range len(a.starters.starters) {
+		select {
+		case err := <-errCh:
+			if err == nil {
+				log.Debug(ctx, "error is nil")
+				continue
+			}
+			return err
+		case <-ctx.Done():
+			return ctx.Err()
+		}
 	}
+
+	return nil
 }
 
 func (a *App) Close(ctx context.Context) error {
