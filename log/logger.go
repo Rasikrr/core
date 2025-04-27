@@ -72,10 +72,23 @@ func Init(env enum.Environment) {
 			})
 		default:
 			handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-				Level:     slog.LevelDebug,
-				AddSource: true,
+				Level:       slog.LevelDebug,
+				AddSource:   true,
+				ReplaceAttr: replaceLevelAttr,
 			})
 		}
 		defaultLogger = &slogWrapper{base: slog.New(handler)}
 	})
+}
+
+// nolint: gocritic
+func replaceLevelAttr(_ []string, a slog.Attr) slog.Attr {
+	if a.Key == slog.LevelKey {
+		level := a.Value.Any().(slog.Level)
+		switch level {
+		case LevelFatal:
+			return slog.String(slog.LevelKey, FatalString)
+		}
+	}
+	return a
 }

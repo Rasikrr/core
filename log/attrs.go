@@ -39,11 +39,19 @@ func Any(key string, value any) Attr {
 	return Attr{Key: key, Value: slog.AnyValue(value)}
 }
 
-func convertAttrs(attrs []Attr) []any {
+func convertAttrsToSlog(attrs []Attr) []slog.Attr {
+	slogAttrs := make([]slog.Attr, len(attrs))
+	for i, attr := range attrs {
+		slogAttrs[i] = slog.Any(attr.Key, attr.Value.Any())
+	}
+	return slogAttrs
+}
+
+func convertAttrsToAny(attrs []Attr) []any {
 	anyAttrs := make([]any, len(attrs)*2)
 	for i, attr := range attrs {
 		anyAttrs[i*2] = attr.Key
-		anyAttrs[i*2+1] = attr.Value
+		anyAttrs[i*2+1] = attr.Value.Any()
 	}
 	return anyAttrs
 }
