@@ -9,6 +9,10 @@ func (e *CoreError) Error() string {
 	return e.Message
 }
 
+func (e *CoreError) StatusCode() int {
+	return e.Code
+}
+
 func NewError(message string, code int) *CoreError {
 	return &CoreError{
 		Code:    code,

@@ -30,7 +30,7 @@ func SendData(w http.ResponseWriter, data interface{}, statusCode int) {
 	if ok {
 		bb, err := marshaller.MarshalJSON()
 		if err != nil {
-			SendError(w, http.StatusInternalServerError, err)
+			SendError(w, err)
 			return
 		}
 		w.Write(bb)
@@ -38,7 +38,7 @@ func SendData(w http.ResponseWriter, data interface{}, statusCode int) {
 	}
 	bb, err := json.Marshal(data)
 	if err != nil {
-		SendError(w, http.StatusInternalServerError, err)
+		SendError(w, err)
 		return
 	}
 	w.Write(bb)
@@ -74,19 +74,24 @@ func GetData(r *http.Request, data interface{}) error {
 }
 
 // nolint: errcheck
-func SendError(w http.ResponseWriter, statusCode int, err error) {
+func SendError(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "application/json")
-	r := ErrorResponse{
-		Error:  err.Error(),
-		Status: statusCode,
-	}
-	var coreErr *coreError.CoreError
+
+	var (
+		errorResp ErrorResponse
+		coreErr   *coreError.CoreError
+	)
 
 	if errors.As(err, &coreErr) {
-		r.Error = coreErr.Message
-		r.Status = coreErr.Code
+		errorResp.Error = coreErr.Message
+		errorResp.Status = coreErr.Code
+	} else {
+		coreErr = coreError.GRPCErrorToHTTP(err)
+		errorResp.Error = coreErr.Message
+		errorResp.Status = coreErr.Code
 	}
-	bb, _ := json.Marshal(r)
-	w.WriteHeader(r.Status)
+
+	bb, _ := json.Marshal(errorResp)
+	w.WriteHeader(errorResp.Status)
 	w.Write(bb)
 }
