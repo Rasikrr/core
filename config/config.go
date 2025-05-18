@@ -1,10 +1,12 @@
 package config
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/Rasikrr/core/enum"
 	"github.com/Rasikrr/core/interfaces"
+	"github.com/Rasikrr/core/log"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/joho/godotenv"
 	"os"
@@ -31,7 +33,7 @@ type Config struct {
 
 func Parse() (Config, error) {
 	if err := godotenv.Load(); err != nil {
-		return Config{}, err
+		log.Warnf(context.Background(), "failed to load .env file: %v", err)
 	}
 
 	configFile, ok := os.LookupEnv(configPathEnv)
