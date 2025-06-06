@@ -29,6 +29,7 @@ type Config struct {
 	Redis       RedisConfig      `yaml:"redis"`
 	NATS        NATSConfig       `yaml:"nats"`
 	Variables   Variables        `yaml:"env"`
+	Metrics     Metrics          `yaml:"metrics"`
 }
 
 func Parse() (Config, error) {
@@ -61,6 +62,7 @@ func (c *Config) validate() error {
 		c.Redis,
 		c.NATS,
 		c.Variables,
+		c.Metrics,
 	} {
 		if err := v.Validate(); err != nil {
 			return fmt.Errorf("error while validating config: %w", err)
@@ -95,4 +97,8 @@ func (c *Config) PostgresConfig() PostgresConfig {
 
 func (c *Config) RedisConfig() RedisConfig {
 	return c.Redis
+}
+
+func (c *Config) MetricsConfig() Metrics {
+	return c.Metrics
 }

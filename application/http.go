@@ -12,7 +12,12 @@ func (a *App) initHTTP(ctx context.Context) error {
 		return nil
 	}
 
-	a.httpServer = http.NewServer(ctx, a.Config().HTTPConfig())
+	a.httpServer = http.NewServer(
+		ctx,
+		a.Config().HTTPConfig(),
+		a.Config().MetricsConfig(),
+		a.metrics.HTTP(),
+	)
 
 	log.Info(ctx, "http initialized")
 

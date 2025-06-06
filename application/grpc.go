@@ -11,7 +11,11 @@ func (a *App) initGRPC(ctx context.Context) error {
 	if !a.config.GRPC.Required {
 		return nil
 	}
-	a.grpcServer = coreGrpc.NewServer(a.Config().GRPCConfig())
+	a.grpcServer = coreGrpc.NewServer(
+		a.Config().GRPCConfig(),
+		a.Config().MetricsConfig(),
+		a.metrics.GRPCServer(),
+	)
 
 	log.Info(ctx, "grpc initialized")
 

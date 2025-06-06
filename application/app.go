@@ -8,6 +8,7 @@ import (
 	coreGrpc "github.com/Rasikrr/core/grpc"
 	"github.com/Rasikrr/core/http"
 	"github.com/Rasikrr/core/log"
+	"github.com/Rasikrr/core/metrics"
 	"github.com/Rasikrr/core/redis"
 	"os"
 	"os/signal"
@@ -21,6 +22,9 @@ type App struct {
 	postgres   *database.Postgres
 	httpServer *http.Server
 	grpcServer *coreGrpc.Server
+
+	metrics       metrics.Metricer
+	metricsServer *http.Server
 
 	publisher          nats.Publisher
 	subscriber         nats.Subscriber
@@ -46,6 +50,9 @@ func NewAppWithConfig(ctx context.Context, cfg *config.Config) *App {
 	app.InitLogger()
 	log.Info(context.Background(), "logger initialized")
 
+	if err := app.initMetrics(ctx); err != nil {
+		log.Fatalf(ctx, "failed to init metrics: %v", err)
+	}
 	if err := app.initPostgres(ctx); err != nil {
 		log.Fatalf(ctx, "failed to init postgres: %v", err)
 	}

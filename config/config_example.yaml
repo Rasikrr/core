@@ -1,6 +1,13 @@
-environment: dev # dev, prod
+environment: prod # dev, prod
 
 name: core # name of application
+
+metrics:
+  enabled: true
+  namespace: core
+  prometheus:
+    port: 9100
+
 
 http:
   host: 0.0.0.0
