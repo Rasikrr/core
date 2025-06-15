@@ -23,6 +23,7 @@ output:
     - severity
     - file
   show-stats: true
+  sort-results: true
 
 linters:
   # Enable almost all available linters for maximum strictness
