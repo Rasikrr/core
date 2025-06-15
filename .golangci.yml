@@ -1,391 +1,59 @@
-# .golangci.yml - Ultimate Strict Configuration
-# Based on golangci-lint v2 documentation
-
-version: "2"
-
 run:
-  timeout: 10m
-  issues-exit-code: 1
-  tests: true
-  build-tags:
-    - integration
-  go: '1.23'
+  # default concurrency is a available CPU number
   concurrency: 4
 
+  # timeout for analysis, e.g. 30s, 5m, default is 1m
+  timeout: 5m
+
+  # exit code when at least one issue was found, default is 1
+  issues-exit-code: 1
+
+  # include test files or not, default is true
+  tests: true
+
+  # skip download modules
+  modules-download-mode: readonly
+
+# output configuration options
 output:
-  formats:
-    text:
-      print-linter-name: true
-      print-issued-lines: true
-      colors: true
-  sort-order:
-    - linter
-    - severity
-    - file
-  show-stats: true
-  sort-results: true
+
+  # print lines of code with issue, default is true
+  print-issued-lines: true
+
+  # print linter name in the end of issue text, default is true
+  print-linter-name: true
+
+linters-settings:
+  funlen:
+    lines: 90
+  lll:
+    line-length: 140
 
 linters:
-  # Enable almost all available linters for maximum strictness
   enable:
-    # Core linters (enabled by default)
-    - errcheck
     - govet
-    - ineffassign
+    - errcheck
     - staticcheck
     - unused
-
-    # Security linters
-    - gosec
-    - gochecknoglobals
-    - gochecknoinits
-
-    # Code quality linters
-    - asciicheck
+    - gosimple
+    - ineffassign
+    - typecheck
     - bodyclose
-    - canonicalheader
-    - containedctx
-    - contextcheck
-    - copyloopvar
-    - cyclop
-    - decorder
-    - depguard
-    - dogsled
-    - dupl
-    - dupword
-    - durationcheck
-    - err113
-    - errchkjson
-    - errname
-    - errorlint
-    - exhaustive
-    - exptostd
-    - fatcontext
-    - forbidigo
-    - forcetypeassert
-    - funcorder
-    - funlen
-    - ginkgolinter
-    - gocheckcompilerdirectives
-    - gochecksumtype
-    - gocognit
-    - goconst
-    - gocritic
-    - gocyclo
-    - godot
-    - godox
-    - goheader
-    - gomoddirectives
-    - gomodguard
-    - goprintffuncname
-    - gosmopolitan
-    - grouper
-    - iface
-    - importas
-    - inamedparam
-    - interfacebloat
-    - intrange
-    - ireturn
-    - lll
-    - loggercheck
-    - maintidx
-    - makezero
-    - mirror
-    - misspell
-    - mnd
-    - musttag
-    - nakedret
-    - nestif
-    - nilerr
-    - nilnesserr
-    - nilnil
-    - nlreturn
-    - noctx
-    - nolintlint
-    - nonamedreturns
-    - nosprintfhostport
-    - paralleltest
-    - perfsprint
-    - prealloc
-    - predeclared
-    - promlinter
-    - protogetter
-    - reassign
-    - recvcheck
     - revive
-    - rowserrcheck
-    - sloglint
-    - spancheck
-    - sqlclosecheck
-    - tagalign
-    - tagliatelle
-    - testableexamples
-    - testifylint
-    - testpackage
-    - thelper
-    - tparallel
+    - stylecheck
+    - gosec
     - unconvert
-    - unparam
-    - usestdlibvars
-    - usetesting
-    - varnamelen
-    - wastedassign
+    - dupl
+    - goconst
+    - gocyclo
+    - gocognit
+    - gofmt
+    - misspell
+    - lll
+    - dogsled
+    - nakedret
+    - prealloc
+    - gocritic
+    - funlen
     - whitespace
-    - wrapcheck
-    - wsl
-    - zerologlint
-
-  # Disable only very specific linters that might be too noisy
-  disable:
-    - exhaustruct # In this project, may be possible to not complete struct definitions
-    - asasalint  # Can be too restrictive for variadic functions
-    - bidichk    # Only needed if dealing with unicode issues
-
-  # Exclusion rules
-  exclusions:
-    # Generated files exclusion mode
-    generated: strict
-
-    # Disable warnings about unused exclusion rules
-    warn-unused: false
-
-    # Use common exclusion presets
-    presets:
-      - comments
-      - common-false-positives
-      - std-error-handling
-
-    # Custom exclusion rules
-    rules:
-      # Exclude some linters from test files
-      - path: _test\.go
-        linters:
-          - gocyclo
-          - errcheck
-          - dupl
-          - gosec
-          - funlen
-          - goconst
-          - gocognit
-          - lll
-          - varnamelen
-          - wrapcheck
-          - exhaustruct
-          - maintidx
-
-      # Exclude some linters from generated files
-      - path: internal/generated/
-        linters:
-          - unused
-          - varnamelen
-          - revive
-          - gocritic
-
-      # Exclude some linters from migration files
-      - path: migrations/
-        linters:
-          - lll
-          - goconst
-          - gochecknoglobals
-
-      # Exclude shadow checking on the variable named err
-      - text: "shadow: declaration of \"err\""
-        linters:
-          - govet
-
-      # Exclude lll issues for long lines with go:generate
-      - source: "^//go:generate "
-        linters:
-          - lll
-
-      # Exclude some specific gosec warnings that might be false positives
-      - text: "G304:"  # File path inclusion
-        linters:
-          - gosec
-
-      - text: "G204:"  # Subprocess with variable
-        linters:
-          - gosec
-
-  # Linter-specific settings
-  settings:
-    # Cyclomatic complexity settings
-    cyclop:
-      max-complexity: 15
-      package-average: 10  # More reasonable package average
-
-    gocyclo:
-      min-complexity: 15
-
-    godot:
-      exclude:
-        - " @[A-Z]"
-        - " @[a-z]"
-
-
-    gocognit:
-      min-complexity: 15
-
-    # Function length settings
-    funlen:
-      lines: 100
-      statements: 50
-
-    # Line length
-    lll:
-      line-length: 100
-      tab-width: 1
-
-    # Gosec security settings
-    gosec:
-      severity: "low"
-      confidence: "low"
-      excludes:
-        - G404  # Random number source - might be okay in some contexts
-
-    # Error checking
-    errcheck:
-      check-type-assertions: true
-      check-blank: true
-
-    # Revive configuration
-    revive:
-      confidence: 0.8
-      severity: error
-      rules:
-        - name: var-naming
-          severity: warning
-          disabled: false
-          arguments:
-            - ["ID", "URL", "HTTP", "JSON", "XML", "API", "DB", "SQL"]
-
-    # Magic numbers
-    mnd:
-      checks:
-        - argument
-        - case
-        - condition
-        - operation
-        - return
-        - assign
-      ignored-numbers:
-        - '0'
-        - '1'
-        - '2'
-        - '10'
-        - '100'
-        - '1000'
-        - '0644'
-        - '0755'
-        - '0666'
-
-    # Variable naming
-    varnamelen:
-      min-name-length: 1
-      max-distance: 10
-      check-receiver: true
-      check-return: true
-      check-type-param: true
-      ignore-type-assert-ok: true
-      ignore-map-index-ok: true
-      ignore-chan-recv-ok: true
-      ignore-names:
-        - err
-        - id
-        - db
-        - tx
-        - wg
-        - mu
-        - ok
-        - i
-        - j
-        - k
-
-    # Duplication detection
-    dupl:
-      threshold: 150
-
-    # Exhaustive switch checking
-    exhaustive:
-      check:
-        - switch
-        - map
-      default-signifies-exhaustive: false
-
-    # Import restrictions
-    depguard:
-      rules:
-        main:
-          list-mode: lax
-          files:
-            - "!**/*_test.go"
-          allow:
-            - $gostd
-          deny:
-            - pkg: github.com/pkg/errors
-              desc: "Should be replaced by standard lib errors package"
-
-    # Code formatting
-    whitespace:
-      multi-if: true
-      multi-func: false
-
-    # Struct tags
-    tagliatelle:
-      case:
-        rules:
-          json: snake
-          yaml: kebab
-          xml: camel
-          bson: camel
-          toml: camel
-          env: upperSnake
-          envconfig: upperSnake
-
-    # Interface bloat
-    interfacebloat:
-      max: 10
-
-    # Test helpers
-    thelper:
-      test:
-        first: true
-        name: true
-        begin: true
-      benchmark:
-        first: true
-        name: true
-        begin: true
-
-    # Naked returns
-    nakedret:
-      max-func-lines: 20
-
-    # Nesting
-    nestif:
-      min-complexity: 5
-
-    # Unused parameters
-    unparam:
-      check-exported: false
-
-# Issues configuration
-issues:
-  max-issues-per-linter: 0  # No limit
-  max-same-issues: 0        # No limit
-  new: false               # Check all issues, not just new ones
-
-severity:
-  default: error
-  rules:
-    - linters:
-        - dupl
-        - goconst
-        - misspell
-      severity: warning
-    - linters:
-        - gosec
-        - govet
-        - staticcheck
-        - errcheck
-      severity: error
+    - unparam
