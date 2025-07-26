@@ -7,9 +7,11 @@ import (
 	"github.com/Rasikrr/core/database"
 	coreGrpc "github.com/Rasikrr/core/grpc"
 	"github.com/Rasikrr/core/http"
+	"github.com/Rasikrr/core/interfaces"
 	"github.com/Rasikrr/core/log"
 	"github.com/Rasikrr/core/metrics"
 	"github.com/Rasikrr/core/redis"
+	"go.uber.org/multierr"
 	"os"
 	"os/signal"
 	"syscall"
@@ -32,6 +34,8 @@ type App struct {
 
 	starters Starters
 	closers  Closers
+
+	cancelFunc context.CancelFunc
 }
 
 func NewApp(ctx context.Context) *App {
@@ -73,6 +77,9 @@ func NewAppWithConfig(ctx context.Context, cfg *config.Config) *App {
 }
 
 func (a *App) Start(ctx context.Context) error {
+	ctx, cancel := context.WithCancel(ctx)
+	a.cancelFunc = cancel
+
 	a.initSubscribers(ctx)
 	stopChan := make(chan struct{})
 	go a.gracefulShutdown(ctx, stopChan)
@@ -82,6 +89,15 @@ func (a *App) Start(ctx context.Context) error {
 	<-stopChan
 
 	return nil
+}
+
+func (a *App) AddParallel(startable ...interfaces.Starter) {
+	for _, s := range startable {
+		a.starters.Add(s)
+		if closer, ok := s.(interfaces.Closer); ok {
+			a.closers.Add(closer)
+		}
+	}
 }
 
 func (a *App) start(ctx context.Context) error {
@@ -101,7 +117,7 @@ func (a *App) start(ctx context.Context) error {
 			errCh <- s.Start(ctx)
 		}()
 	}
-
+	var multiErr error
 	log.Debug(ctx, "len of starters", log.Int("len", len(a.starters.starters)))
 
 	for range len(a.starters.starters) {
@@ -111,13 +127,13 @@ func (a *App) start(ctx context.Context) error {
 				log.Debug(ctx, "error is nil")
 				continue
 			}
-			return err
+			multiErr = multierr.Append(multiErr, err)
 		case <-ctx.Done():
-			return ctx.Err()
+			log.Info(ctx, "context is done", log.Err(ctx.Err()))
+			return nil
 		}
 	}
-
-	return nil
+	return multiErr
 }
 
 func (a *App) Close(ctx context.Context) error {
@@ -134,6 +150,7 @@ func (a *App) gracefulShutdown(ctx context.Context, stopChan chan struct{}) {
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 
 	<-sigChan
+	a.cancelFunc()
 
 	if err := a.Close(ctx); err != nil {
 		log.Errorf(ctx, "error while closing app: %v", err)

@@ -25,13 +25,22 @@ func NewPrometheusMetricer(_ context.Context, namespace string) Metricer {
 }
 
 func (m *PrometheusMetricer) HTTP() HTTPMetrics {
+	if m == nil || m.http == nil {
+		return nil
+	}
 	return m.http
 }
 
 func (m *PrometheusMetricer) GRPCServer() GRPCServerMetrics {
+	if m == nil || m.grpcServer == nil {
+		return nil
+	}
 	return m.grpcServer
 }
 
 func (m *PrometheusMetricer) GRPCClient() GRPCClientMetrics {
+	if m == nil || m.grpcClient == nil {
+		return nil
+	}
 	return m.grpcClient
 }

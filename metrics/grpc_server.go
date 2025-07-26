@@ -68,12 +68,6 @@ func (m *grpcServerMetrics) IncError(typ, method, code string) {
 	m.errors.WithLabelValues(typ, method, code).Inc()
 }
 
-type MyInt int
-
-func Test() MyInt {
-	return 34
-}
-
 func UnaryServerInterceptor(m GRPCServerMetrics) grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
