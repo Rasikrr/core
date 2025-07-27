@@ -1,4 +1,4 @@
 lint:
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.59.1
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go fmt ./...
-	golangci-lint run --fix
+	golangci-lint run
