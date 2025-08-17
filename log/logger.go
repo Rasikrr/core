@@ -2,10 +2,11 @@ package log
 
 import (
 	"context"
-	"github.com/Rasikrr/core/enum"
 	"log/slog"
 	"os"
 	"sync"
+
+	"github.com/Rasikrr/core/enum"
 )
 
 var (
@@ -61,21 +62,20 @@ func Default() Logger {
 	return defaultLogger
 }
 
-func Init(env enum.Environment) {
+func Init(env enum.Environment, level enum.LogLevel, addSource bool) {
+	lvl := level.ToSlogLevel()
+	opts := &slog.HandlerOptions{
+		Level:       lvl,
+		AddSource:   addSource,
+		ReplaceAttr: replaceLevelAttr,
+	}
 	once.Do(func() {
 		var handler slog.Handler
 		switch env {
 		case enum.EnvironmentProd:
-			handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-				Level:     slog.LevelInfo,
-				AddSource: false,
-			})
+			handler = slog.NewJSONHandler(os.Stdout, opts)
 		default:
-			handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-				Level:       slog.LevelDebug,
-				AddSource:   true,
-				ReplaceAttr: replaceLevelAttr,
-			})
+			handler = slog.NewTextHandler(os.Stdout, opts)
 		}
 		defaultLogger = &slogWrapper{base: slog.New(handler)}
 	})

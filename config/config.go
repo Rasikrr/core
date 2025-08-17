@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+
 	"github.com/Rasikrr/core/enum"
 	"github.com/Rasikrr/core/interfaces"
 	"github.com/Rasikrr/core/log"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/joho/godotenv"
-	"os"
 )
 
 const (
@@ -23,6 +24,7 @@ var (
 type Config struct {
 	AppName     string           `yaml:"name"`
 	Environment enum.Environment `yaml:"environment"`
+	Logger      LoggerConfig     `yaml:"log"`
 	HTTP        HTTPConfig       `yaml:"http"`
 	GRPC        GRPCConfig       `yaml:"grpc"`
 	Postgres    PostgresConfig   `yaml:"postgres"`
@@ -101,4 +103,8 @@ func (c *Config) RedisConfig() RedisConfig {
 
 func (c *Config) MetricsConfig() Metrics {
 	return c.Metrics
+}
+
+func (c *Config) LoggerConfig() LoggerConfig {
+	return c.Logger
 }

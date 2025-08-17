@@ -5,5 +5,9 @@ import (
 )
 
 func (a *App) InitLogger() {
-	log.Init(a.Config().Env())
+	log.Init(
+		a.Config().Env(),
+		a.Config().LoggerConfig().Level,
+		a.Config().LoggerConfig().AddSource,
+	)
 }
