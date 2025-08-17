@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/Rasikrr/core/interfaces"
 	"github.com/Rasikrr/core/log"
 
@@ -20,12 +21,13 @@ type Subscriber interface {
 }
 
 type SubscriberHandler interface {
-	Handle(m *nats.Msg)
+	Handle(m *nats.Msg) error
 	Subject() string
 }
 
 type subscriber struct {
 	nc       *nats.Conn
+	js       *nats.JetStream
 	queue    string
 	handlers []SubscriberHandler
 }
@@ -97,7 +99,14 @@ func (s *subscriber) Subscribe(ctx context.Context, subject string, handler Subs
 }
 
 func (s *subscriber) SubscribeQueue(ctx context.Context, subject string, queue string, handler SubscriberHandler) error {
-	_, err := s.nc.QueueSubscribe(subject, queue, handler.Handle)
+	l := log.With(log.String("subject", subject), log.String("queue", queue))
+
+	_, err := s.nc.QueueSubscribe(subject, queue, func(msg *nats.Msg) {
+		err := handler.Handle(msg)
+		if err != nil {
+			l.Error(ctx, "handle message error", log.Err(err))
+		}
+	})
 	log.Debugf(ctx, "subscribed to subject: %s, queue: %s\n", subject, queue)
 	if err != nil {
 		return err
