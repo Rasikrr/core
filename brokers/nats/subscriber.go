@@ -27,7 +27,6 @@ type SubscriberHandler interface {
 
 type subscriber struct {
 	nc       *nats.Conn
-	js       *nats.JetStream
 	queue    string
 	handlers []SubscriberHandler
 }
@@ -63,6 +62,7 @@ func (s *subscriber) WithHandlers(handlers ...SubscriberHandler) {
 }
 
 func (s *subscriber) Subscribe(ctx context.Context, subject string, handler SubscriberHandler) error {
+	l := log.With(log.String("subject", subject))
 	sub, err := s.nc.SubscribeSync(subject)
 	if err != nil {
 		return err
@@ -90,7 +90,9 @@ func (s *subscriber) Subscribe(ctx context.Context, subject string, handler Subs
 					continue
 				}
 				log.Debug(ctx, "new message")
-				handler.Handle(m)
+				if err := handler.Handle(m); err != nil {
+					l.Error(ctx, "handle message error", log.Err(err))
+				}
 			}
 		}
 	}()
