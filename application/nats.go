@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"fmt"
+
 	"github.com/Rasikrr/core/brokers/nats"
 	"github.com/Rasikrr/core/log"
 )
@@ -15,12 +16,12 @@ func (a *App) initNats(ctx context.Context) error {
 	}
 
 	var err error
-	a.publisher, err = nats.NewPublisher(cfg.DSN)
+	a.publisher, err = nats.NewPublisher(cfg.DSN, a.Metricer())
 	if err != nil {
 		return fmt.Errorf("init NATS error: %w", err)
 	}
 
-	a.subscriber, err = nats.NewSubscriber(cfg.DSN, nats.WithQueue(cfg.Queue))
+	a.subscriber, err = nats.NewSubscriber(cfg.DSN, a.Metricer())
 	if err != nil {
 		return fmt.Errorf("init NATS error: %w", err)
 	}

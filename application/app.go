@@ -2,6 +2,10 @@ package application
 
 import (
 	"context"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/Rasikrr/core/brokers/nats"
 	"github.com/Rasikrr/core/config"
 	"github.com/Rasikrr/core/database"
@@ -12,9 +16,6 @@ import (
 	"github.com/Rasikrr/core/metrics"
 	"github.com/Rasikrr/core/redis"
 	"go.uber.org/multierr"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 type App struct {
@@ -25,7 +26,7 @@ type App struct {
 	httpServer *http.Server
 	grpcServer *coreGrpc.Server
 
-	metrics       metrics.Metricer
+	metricer      metrics.Metricer
 	metricsServer *http.Server
 
 	publisher          nats.Publisher
@@ -184,6 +185,13 @@ func (a *App) Redis() redis.Cache {
 		log.Fatalf(context.Background(), "redis is not initialized or not required. please check your config")
 	}
 	return a.redis
+}
+
+func (a *App) Metricer() metrics.Metricer {
+	if a.metricer == nil {
+		log.Fatalf(context.Background(), "metrics is not initialized or not required. please check your config")
+	}
+	return a.metricer
 }
 
 func (a *App) Config() *config.Config {

@@ -4,9 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/Rasikrr/core/interfaces"
 	"github.com/Rasikrr/core/log"
+	"github.com/Rasikrr/core/metrics"
+	nats2 "github.com/Rasikrr/core/metrics/nats"
 
 	"github.com/nats-io/nats.go"
 )
@@ -28,7 +31,31 @@ type SubscriberHandler interface {
 type subscriber struct {
 	nc       *nats.Conn
 	queue    string
+	metrics  nats2.SubscriberMetrics
 	handlers []SubscriberHandler
+}
+
+func NewSubscriber(
+	addr string,
+	metricer metrics.Metricer,
+	options ...SubscriberOption,
+) (Subscriber, error) {
+	nc, err := nats.Connect(addr)
+	if err != nil {
+		return nil, fmt.Errorf("connect to Nats %s error: %w", addr, err)
+	}
+
+	s := &subscriber{
+		nc: nc,
+	}
+	for _, opt := range options {
+		if err = opt(s); err != nil {
+			return nil, err
+		}
+	}
+	s.metrics = nats2.NewNATSSubscriberMetrics(metricer)
+
+	return s, nil
 }
 
 func WithQueue(queue string) SubscriberOption {
@@ -39,22 +66,6 @@ func WithQueue(queue string) SubscriberOption {
 		s.queue = queue
 		return nil
 	}
-}
-
-func NewSubscriber(addr string, options ...SubscriberOption) (Subscriber, error) {
-	nc, err := nats.Connect(addr)
-	if err != nil {
-		return nil, fmt.Errorf("connect to Nats %s error: %w", addr, err)
-	}
-
-	s := &subscriber{nc: nc}
-	for _, opt := range options {
-		if err = opt(s); err != nil {
-			return nil, err
-		}
-	}
-
-	return s, nil
 }
 
 func (s *subscriber) WithHandlers(handlers ...SubscriberHandler) {
@@ -80,19 +91,26 @@ func (s *subscriber) Subscribe(ctx context.Context, subject string, handler Subs
 			case <-ctx.Done():
 				return
 			default:
-				var m *nats.Msg
+				var (
+					m     *nats.Msg
+					start = time.Now()
+				)
 				m, err = sub.NextMsgWithContext(ctx)
 				if err != nil {
 					if errors.Is(err, context.Canceled) {
 						return
 					}
+					s.metrics.IncError(subject)
 					log.Error(ctx, "context canceled")
 					continue
 				}
 				log.Debug(ctx, "new message")
-				if err := handler.Handle(m); err != nil {
+				s.metrics.IncMsg(subject)
+				if err = handler.Handle(m); err != nil {
 					l.Error(ctx, "handle message error", log.Err(err))
+					s.metrics.IncError(subject)
 				}
+				s.metrics.ObserveDuration(subject, time.Since(start).Seconds())
 			}
 		}
 	}()

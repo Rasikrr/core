@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+
 	"github.com/Rasikrr/core/http"
 	"github.com/Rasikrr/core/log"
 	"github.com/Rasikrr/core/metrics"
@@ -14,7 +15,7 @@ func (a *App) initMetrics(ctx context.Context) error {
 	}
 	cfg := a.config.MetricsConfig()
 
-	a.metrics = metrics.NewPrometheusMetricer(ctx, cfg.Namespace)
+	a.metricer = metrics.NewPrometheusMetricer(cfg.Namespace, nil)
 	a.metricsServer = http.NewMetricsServer(ctx, cfg)
 
 	a.starters.Add(a.metricsServer)

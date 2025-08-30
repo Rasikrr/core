@@ -1,46 +1,27 @@
 package metrics
 
-import (
-	"context"
-)
+import "github.com/prometheus/client_golang/prometheus"
 
 type Metricer interface {
-	HTTP() HTTPMetrics
-	GRPCServer() GRPCServerMetrics
-	GRPCClient() GRPCClientMetrics
+	Registerer() prometheus.Registerer
+	Namespace() string
+	Subsystem(name string) Subsystem
 }
 
-type PrometheusMetricer struct {
-	http       HTTPMetrics
-	grpcServer GRPCServerMetrics
-	grpcClient GRPCClientMetrics
+type PromMetricer struct {
+	ns  string
+	reg prometheus.Registerer
 }
 
-func NewPrometheusMetricer(_ context.Context, namespace string) Metricer {
-	return &PrometheusMetricer{
-		http:       newHTTPMetrics(namespace),
-		grpcServer: NewGRPCServerMetrics(namespace),
-		grpcClient: NewGRPCClientMetrics(namespace),
+func NewPrometheusMetricer(namespace string, reg prometheus.Registerer) *PromMetricer {
+	if reg == nil {
+		reg = prometheus.DefaultRegisterer
 	}
+	return &PromMetricer{ns: namespace, reg: reg}
 }
 
-func (m *PrometheusMetricer) HTTP() HTTPMetrics {
-	if m == nil || m.http == nil {
-		return nil
-	}
-	return m.http
-}
-
-func (m *PrometheusMetricer) GRPCServer() GRPCServerMetrics {
-	if m == nil || m.grpcServer == nil {
-		return nil
-	}
-	return m.grpcServer
-}
-
-func (m *PrometheusMetricer) GRPCClient() GRPCClientMetrics {
-	if m == nil || m.grpcClient == nil {
-		return nil
-	}
-	return m.grpcClient
+func (m *PromMetricer) Registerer() prometheus.Registerer { return m.reg }
+func (m *PromMetricer) Namespace() string                 { return m.ns }
+func (m *PromMetricer) Subsystem(name string) Subsystem {
+	return &promSubsystem{ns: m.Namespace(), sub: name, reg: m.Registerer()}
 }

@@ -4,14 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/Rasikrr/core/api"
 	"github.com/Rasikrr/core/config"
 	"github.com/Rasikrr/core/log"
 	"github.com/Rasikrr/core/metrics"
+	http2 "github.com/Rasikrr/core/metrics/http"
+	"github.com/Rasikrr/core/util"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"net/http"
-	"time"
 )
 
 const (
@@ -32,8 +35,7 @@ type Server struct {
 func NewServer(
 	_ context.Context,
 	cfg config.HTTPConfig,
-	metricsCfg config.Metrics,
-	httpMetrics metrics.HTTPMetrics,
+	metricer metrics.Metricer,
 ) *Server {
 	router := chi.NewRouter()
 
@@ -50,8 +52,8 @@ func NewServer(
 		},
 		router: router,
 	}
-	if metricsCfg.Enabled {
-		srv.WithMiddlewares(metrics.NewHTTPMetricsMiddleware(httpMetrics))
+	if !util.IsNil(metricer) {
+		srv.WithMiddlewares(http2.NewHTTPMetrics(metricer))
 	}
 	srv.WithMiddlewares(NewCORSMiddleware())
 	srv.WithMiddlewares(NewRecoverMiddleware())

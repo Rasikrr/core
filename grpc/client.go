@@ -3,8 +3,10 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"github.com/Rasikrr/core/config"
+
 	"github.com/Rasikrr/core/metrics"
+	grpc2 "github.com/Rasikrr/core/metrics/grpc"
+	"github.com/Rasikrr/core/util"
 	"google.golang.org/grpc"
 )
 
@@ -15,12 +17,14 @@ type Client struct {
 func NewClient(
 	ctx context.Context,
 	addr string,
-	metricsCfg config.Metrics,
-	metricer metrics.GRPCClientMetrics,
+	metricer metrics.Metricer,
 	opts ...grpc.DialOption,
 ) (*Client, error) {
-	if metricsCfg.Enabled {
-		opts = append(opts, grpc.WithUnaryInterceptor(metrics.UnaryClientInterceptor(metricer)))
+	if !util.IsNil(metricer) {
+		opts = append(opts,
+			grpc.WithUnaryInterceptor(
+				grpc2.NewGRPCClientMetrics(metricer, addr).UnaryInterceptor(),
+			))
 	}
 	return NewClientWithOptions(ctx, addr, opts...)
 }
