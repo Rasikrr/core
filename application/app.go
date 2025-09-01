@@ -13,11 +13,11 @@ import (
 	"github.com/Rasikrr/core/http"
 	"github.com/Rasikrr/core/interfaces"
 	"github.com/Rasikrr/core/log"
-	"github.com/Rasikrr/core/metrics"
 	"github.com/Rasikrr/core/redis"
 	"go.uber.org/multierr"
 )
 
+// nolint: unused
 type App struct {
 	name       string
 	config     *config.Config
@@ -26,7 +26,6 @@ type App struct {
 	httpServer *http.Server
 	grpcServer *coreGrpc.Server
 
-	metrics       metrics.Metricer
 	metricsServer *http.Server
 
 	publisher          nats.Publisher

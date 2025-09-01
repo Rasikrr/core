@@ -5,6 +5,6 @@ import (
 )
 
 // nolint: unparam
-func (a *App) initMetrics(ctx context.Context) error {
+func (a *App) initMetrics(_ context.Context) error {
 	return nil
 }
