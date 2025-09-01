@@ -4,15 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
+	"runtime/debug"
+
 	"github.com/Rasikrr/core/config"
 	"github.com/Rasikrr/core/log"
-	"github.com/Rasikrr/core/metrics"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"net"
-	"runtime/debug"
 )
 
 const (
@@ -28,13 +28,11 @@ type Server struct {
 
 func NewServer(
 	cfg config.GRPCConfig,
-	metricsCfg config.Metrics,
-	grpcMetrics metrics.GRPCServerMetrics,
 ) *Server {
 	return &Server{
 		host:   cfg.Host,
 		port:   cfg.Port,
-		server: newGrpcServer(metricsCfg, grpcMetrics),
+		server: newGrpcServer(),
 	}
 }
 
@@ -67,16 +65,12 @@ func (s *Server) addr(host string) string {
 	return fmt.Sprintf("%s:%d", host, s.port)
 }
 
-func newGrpcServer(metricsCfg config.Metrics, grpcMetrics metrics.GRPCServerMetrics) *grpc.Server {
+func newGrpcServer() *grpc.Server {
 	unaryInterceptors := []grpc.UnaryServerInterceptor{
 		unaryPanicRecoveryInterceptor,
 	}
 	streamInterceptors := []grpc.StreamServerInterceptor{
 		streamPanicRecoveryInterceptor,
-	}
-
-	if metricsCfg.Enabled {
-		unaryInterceptors = append(unaryInterceptors, metrics.UnaryServerInterceptor(grpcMetrics))
 	}
 
 	unary := grpc.UnaryInterceptor(

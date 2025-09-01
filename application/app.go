@@ -2,6 +2,10 @@ package application
 
 import (
 	"context"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/Rasikrr/core/brokers/nats"
 	"github.com/Rasikrr/core/config"
 	"github.com/Rasikrr/core/database"
@@ -12,9 +16,6 @@ import (
 	"github.com/Rasikrr/core/metrics"
 	"github.com/Rasikrr/core/redis"
 	"go.uber.org/multierr"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 type App struct {
