@@ -2,9 +2,9 @@ package application
 
 import (
 	"context"
+
 	coreGrpc "github.com/Rasikrr/core/grpc"
 	"github.com/Rasikrr/core/log"
-	"github.com/Rasikrr/core/metrics"
 )
 
 // nolint: unparam
@@ -13,14 +13,8 @@ func (a *App) initGRPC(ctx context.Context) error {
 		return nil
 	}
 
-	var grpcMetrics metrics.GRPCServerMetrics
-	if a.metrics != nil {
-		grpcMetrics = a.metrics.GRPCServer()
-	}
 	a.grpcServer = coreGrpc.NewServer(
 		a.Config().GRPCConfig(),
-		a.Config().MetricsConfig(),
-		grpcMetrics,
 	)
 
 	log.Info(ctx, "grpc initialized")
