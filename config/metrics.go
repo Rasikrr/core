@@ -10,9 +10,9 @@ var (
 )
 
 type Metrics struct {
-	Enabled    bool                 `yaml:"enabled" env:"METRICS_ENABLED" env-default:"false"`
-	Namespace  string               `yaml:"namespace" env:"METRICS_NAMESPACE"`
-	Prometheus PrometheusExportConf `yaml:"prometheus" env:"METRICS_PROMETHEUS"`
+	Enabled    bool                 `yaml:"enabled"`
+	Namespace  string               `yaml:"namespace"`
+	Prometheus PrometheusExportConf `yaml:"prometheus"`
 }
 
 type PrometheusExportConf struct {
