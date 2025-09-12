@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/Rasikrr/core/interfaces"
 	"github.com/Rasikrr/core/log"
@@ -42,6 +43,7 @@ func WithQueue(queue string) SubscriberOption {
 }
 
 func NewSubscriber(addr string, options ...SubscriberOption) (Subscriber, error) {
+	initNATSMetrics()
 	nc, err := nats.Connect(addr)
 	if err != nil {
 		return nil, fmt.Errorf("connect to Nats %s error: %w", addr, err)
@@ -69,8 +71,7 @@ func (s *subscriber) Subscribe(ctx context.Context, subject string, handler Subs
 	}
 	go func() {
 		defer func() {
-			err = sub.Unsubscribe()
-			if err != nil {
+			if err := sub.Unsubscribe(); err != nil {
 				log.Errorf(ctx, "unsubscribe error: %v", err)
 			}
 		}()
@@ -80,19 +81,27 @@ func (s *subscriber) Subscribe(ctx context.Context, subject string, handler Subs
 			case <-ctx.Done():
 				return
 			default:
-				var m *nats.Msg
-				m, err = sub.NextMsgWithContext(ctx)
+				msg, err := sub.NextMsgWithContext(ctx)
 				if err != nil {
 					if errors.Is(err, context.Canceled) {
 						return
 					}
-					log.Error(ctx, "context canceled")
+					log.Error(ctx, "next msg error", log.Err(err))
 					continue
 				}
-				log.Debug(ctx, "new message")
-				if err := handler.Handle(m); err != nil {
+
+				metrics.recvTotal.WithLabelValues(subject).Inc()
+				if msg != nil && msg.Data != nil {
+					metrics.recvBytes.WithLabelValues(subject).Observe(float64(len(msg.Data)))
+				}
+
+				start := time.Now()
+				metrics.inflightReq.WithLabelValues(subject).Inc()
+				if err := handler.Handle(msg); err != nil {
 					l.Error(ctx, "handle message error", log.Err(err))
 				}
+				metrics.handlerSeconds.WithLabelValues(subject).Observe(time.Since(start).Seconds())
+				metrics.inflightReq.WithLabelValues(subject).Dec()
 			}
 		}
 	}()
@@ -104,16 +113,21 @@ func (s *subscriber) SubscribeQueue(ctx context.Context, subject string, queue s
 	l := log.With(log.String("subject", subject), log.String("queue", queue))
 
 	_, err := s.nc.QueueSubscribe(subject, queue, func(msg *nats.Msg) {
-		err := handler.Handle(msg)
-		if err != nil {
+		metrics.recvTotal.WithLabelValues(subject).Inc()
+		if msg != nil && msg.Data != nil {
+			metrics.recvBytes.WithLabelValues(subject).Observe(float64(len(msg.Data)))
+		}
+
+		start := time.Now()
+		metrics.inflightReq.WithLabelValues(subject).Inc()
+		if err := handler.Handle(msg); err != nil {
 			l.Error(ctx, "handle message error", log.Err(err))
 		}
+		metrics.handlerSeconds.WithLabelValues(subject).Observe(time.Since(start).Seconds())
+		metrics.inflightReq.WithLabelValues(subject).Dec()
 	})
 	log.Debugf(ctx, "subscribed to subject: %s, queue: %s\n", subject, queue)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (s *subscriber) Start(ctx context.Context) error {

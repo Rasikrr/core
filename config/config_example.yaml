@@ -7,7 +7,7 @@ log:
   add_source: true
 
 metrics:
-  enabled: true
+  enabled: false
   namespace: core
   prometheus:
     port: 9100
@@ -24,7 +24,7 @@ grpc:
   required: true
 
 postgres:
-  required: true
+  required: false
   max_conns: 10
   min_conns: 3
   max_idle_conn_time: 10m

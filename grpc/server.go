@@ -66,11 +66,15 @@ func (s *Server) addr(host string) string {
 }
 
 func newGrpcServer() *grpc.Server {
+	initGRPCMetrics()
+
 	unaryInterceptors := []grpc.UnaryServerInterceptor{
 		unaryPanicRecoveryInterceptor,
+		metrics.UnaryServer(),
 	}
 	streamInterceptors := []grpc.StreamServerInterceptor{
 		streamPanicRecoveryInterceptor,
+		metrics.StreamServer(),
 	}
 
 	unary := grpc.UnaryInterceptor(
