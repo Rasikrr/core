@@ -10,7 +10,7 @@ var (
 )
 
 type PostgresConfig struct {
-	DSN                 string        `yaml:"dsn" env:"POSTGRES_DSN"`
+	DSN                 string        `yaml:"-" env:"POSTGRES_DSN"`
 	Required            bool          `yaml:"required"`
 	MaxConns            int           `yaml:"max_conns"`
 	MinConns            int           `yaml:"min_conns"`

@@ -10,11 +10,11 @@ var (
 )
 
 type RedisConfig struct {
-	Host        string        `yaml:"host" env:"REDIS_HOST"`
-	Port        int           `yaml:"port" env:"REDIS_PORT"`
-	User        string        `yaml:"user" env:"REDIS_USER"`
-	Password    string        `yaml:"password" env:"REDIS_PASSWORD"`
-	DB          int           `yaml:"db" env:"REDIS_DB"`
+	Host        string        `yaml:"-" env:"REDIS_HOST"`
+	Port        int           `yaml:"-" env:"REDIS_PORT"`
+	User        string        `yaml:"-" env:"REDIS_USER"`
+	Password    string        `yaml:"-" env:"REDIS_PASSWORD"`
+	DB          int           `yaml:"-" env:"REDIS_DB"`
 	Required    bool          `yaml:"required"`
 	PoolSize    int           `yaml:"pool_size"`
 	MinIdle     int           `yaml:"min_idle_conns"`

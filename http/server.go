@@ -50,6 +50,10 @@ func NewServer(
 	}
 	srv.WithMiddlewares(NewCORSMiddleware())
 	srv.WithMiddlewares(NewRecoverMiddleware())
+
+	initHTTPMetrics()
+	srv.WithMiddlewares(m)
+
 	srv.registerMiddlewares()
 	addHealthRoute(router)
 	return srv
