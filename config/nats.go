@@ -10,7 +10,7 @@ var (
 
 type NATSConfig struct {
 	Required bool   `yaml:"required"`
-	DSN      string `yaml:"dsn"`
+	DSN      string `yaml:"-" env:"NATS_DSN"`
 	Queue    string `yaml:"queue"`
 }
 

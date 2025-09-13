@@ -1,238 +1,308 @@
 package metrics
 
 import (
+	"context"
 	"errors"
-	"fmt"
-	"sync"
+	"time"
 
-	"github.com/Rasikrr/core/util"
+	"github.com/Rasikrr/core/log"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-const metricsErrorFormat = "metric register conflict: %v (ns=%q, subsystem=%q, name=%q, labels=%v)"
+type (
+	promCounter struct{ c prometheus.Counter }
+	promGauge   struct{ g prometheus.Gauge }
+	promHist    struct{ o prometheus.Observer }
+	promSumm    struct{ o prometheus.Observer }
 
-var ErrMetricAlreadyExists = errors.New("metric already registered")
-
-type Metricer struct {
-	nameSpace  string
-	enabled    bool
-	registerer prometheus.Registerer
-}
-
-var (
-	metricer *Metricer
-	once     sync.Once
+	promCounterVec struct{ v *prometheus.CounterVec }
+	promGaugeVec   struct{ v *prometheus.GaugeVec }
+	promHistVec    struct{ v *prometheus.HistogramVec }
+	promSummVec    struct{ v *prometheus.SummaryVec }
 )
 
-// Init инициализирует пакет. reg можно передать обёрнутый WrapRegistererWith(...), если нужно.
-func Init(active bool, namespace string, reg prometheus.Registerer) {
-	once.Do(func() {
-		r := prometheus.DefaultRegisterer
-		if !util.IsNil(reg) {
-			r = reg
-		}
-		metricer = &Metricer{
-			nameSpace:  namespace,
-			enabled:    active,
-			registerer: r,
-		}
-	})
+func (p promCounter) Inc()          { p.c.Inc() }
+func (p promCounter) Add(v float64) { p.c.Add(v) }
+
+func (p promGauge) Inc()              { p.g.Inc() }
+func (p promGauge) Dec()              { p.g.Dec() }
+func (p promGauge) Add(v float64)     { p.g.Add(v) }
+func (p promGauge) Sub(v float64)     { p.g.Sub(v) }
+func (p promGauge) Set(v float64)     { p.g.Set(v) }
+func (p promGauge) SetToCurrentTime() { p.g.SetToCurrentTime() }
+
+func (p promHist) Observe(v float64) { p.o.Observe(v) }
+
+func (p promSumm) Observe(v float64) { p.o.Observe(v) }
+
+func (p promCounterVec) WithLabelValues(lvs ...string) Counter {
+	return promCounter{c: p.v.WithLabelValues(lvs...)}
+}
+func (p promGaugeVec) WithLabelValues(lvs ...string) Gauge {
+	return promGauge{g: p.v.WithLabelValues(lvs...)}
+}
+func (p promHistVec) WithLabelValues(lvs ...string) Histogram {
+	return promHist{o: p.v.WithLabelValues(lvs...)} // <- Observer
+}
+func (p promSummVec) WithLabelValues(lvs ...string) Summary {
+	return promSumm{o: p.v.WithLabelValues(lvs...)} // <- Observer
 }
 
-func Enabled() bool { return metricer != nil && metricer.enabled }
+/* ========== internals ========== */
 
-func NameSpace() string {
+func registerer() prometheus.Registerer {
+	if metricer == nil || metricer.registerer == nil {
+		return prometheus.DefaultRegisterer
+	}
+	return metricer.registerer
+}
+func namespace() string {
 	if metricer == nil {
 		return ""
 	}
-	return metricer.nameSpace
+	return metricer.namespace
 }
+func isOn() bool { return metricer != nil && metricer.enabled }
 
-// ----------------- Внутренний helper регистрации -----------------
-
-func registerOrExisting(c prometheus.Collector) (prometheus.Collector, error) {
-	if metricer == nil {
-		return nil, fmt.Errorf("metrics not initialized")
-	}
-	// Если метрики выключены — считаем noop по регистрации:
-	// метрика создаётся, но не попадает в реестр -> не экспозится.
-	if !metricer.enabled {
-		return c, nil
-	}
-	if err := metricer.registerer.Register(c); err != nil {
+// typed register-or-get helpers
+func registerCounter(c prometheus.Counter) prometheus.Counter {
+	if err := registerer().Register(c); err != nil {
 		var are prometheus.AlreadyRegisteredError
 		if errors.As(err, &are) {
-			return are.ExistingCollector, ErrMetricAlreadyExists
+			if ex, ok := are.ExistingCollector.(prometheus.Counter); ok {
+				return ex
+			}
+			log.Fatalf(context.Background(), "metrics error: %v", err)
 		}
-		return nil, err
 	}
-	return c, nil
+	return c
+}
+func registerGauge(g prometheus.Gauge) prometheus.Gauge {
+	if err := registerer().Register(g); err != nil {
+		var are prometheus.AlreadyRegisteredError
+		if errors.As(err, &are) {
+			if ex, ok := are.ExistingCollector.(prometheus.Gauge); ok {
+				return ex
+			}
+			log.Fatalf(context.Background(), "metrics error: %v", err)
+		}
+	}
+	return g
+}
+func registerHistogram(h prometheus.Histogram) prometheus.Histogram {
+	if err := registerer().Register(h); err != nil {
+		var are prometheus.AlreadyRegisteredError
+		if errors.As(err, &are) {
+			if ex, ok := are.ExistingCollector.(prometheus.Histogram); ok {
+				return ex
+			}
+			log.Fatalf(context.Background(), "metrics error: %v", err)
+		}
+	}
+	return h
+}
+func registerSummary(s prometheus.Summary) prometheus.Summary {
+	if err := registerer().Register(s); err != nil {
+		var are prometheus.AlreadyRegisteredError
+		if errors.As(err, &are) {
+			if ex, ok := are.ExistingCollector.(prometheus.Summary); ok {
+				return ex
+			}
+			log.Fatalf(context.Background(), "metrics error: %v", err)
+		}
+	}
+	return s
+}
+func registerCounterVec(v *prometheus.CounterVec) *prometheus.CounterVec {
+	if err := registerer().Register(v); err != nil {
+		var are prometheus.AlreadyRegisteredError
+		if errors.As(err, &are) {
+			if ex, ok := are.ExistingCollector.(*prometheus.CounterVec); ok {
+				return ex
+			}
+			log.Fatalf(context.Background(), "metrics error: %v", err)
+		}
+	}
+	return v
+}
+func registerGaugeVec(v *prometheus.GaugeVec) *prometheus.GaugeVec {
+	if err := registerer().Register(v); err != nil {
+		var are prometheus.AlreadyRegisteredError
+		if errors.As(err, &are) {
+			if ex, ok := are.ExistingCollector.(*prometheus.GaugeVec); ok {
+				return ex
+			}
+			log.Fatalf(context.Background(), "metrics error: %v", err)
+		}
+	}
+	return v
+}
+func registerHistVec(v *prometheus.HistogramVec) *prometheus.HistogramVec {
+	if err := registerer().Register(v); err != nil {
+		var are prometheus.AlreadyRegisteredError
+		if errors.As(err, &are) {
+			if ex, ok := are.ExistingCollector.(*prometheus.HistogramVec); ok {
+				return ex
+			}
+			log.Fatalf(context.Background(), "metrics error: %v", err)
+		}
+	}
+	return v
+}
+func registerSummVec(v *prometheus.SummaryVec) *prometheus.SummaryVec {
+	if err := registerer().Register(v); err != nil {
+		var are prometheus.AlreadyRegisteredError
+		if errors.As(err, &are) {
+			if ex, ok := are.ExistingCollector.(*prometheus.SummaryVec); ok {
+				return ex
+			}
+			log.Fatalf(context.Background(), "metrics error: %v", err)
+		}
+	}
+	return v
 }
 
-// ----------------- Counter -----------------
+/* ========== constructors ========== */
 
-func NewCounter(name, subsystem, help string) (prometheus.Counter, error) {
+func NewCounter(subsystem, name, help string, constLabels prometheus.Labels) Counter {
+	if !isOn() {
+		return noopCounter{}
+	}
 	c := prometheus.NewCounter(prometheus.CounterOpts{
-		Namespace: metricer.nameSpace,
-		Subsystem: subsystem,
-		Name:      name,
-		Help:      help,
+		Namespace:   namespace(),
+		Subsystem:   subsystem,
+		Name:        name,
+		Help:        help,
+		ConstLabels: constLabels,
 	})
-	col, err := registerOrExisting(c)
-	if err != nil && !errors.Is(err, ErrMetricAlreadyExists) {
-		return nil, err
-	}
-	existing, ok := col.(prometheus.Counter)
-	if !ok {
-		return nil, fmt.Errorf(metricsErrorFormat, "type mismatch", metricer.nameSpace, subsystem, name, nil)
-	}
-	return existing, nil
+	c = registerCounter(c)
+	return promCounter{c: c}
 }
 
-func NewCounterVec(subsystem, name, help string, labels []string) (*prometheus.CounterVec, error) {
-	cv := prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: metricer.nameSpace,
-			Subsystem: subsystem,
-			Name:      name,
-			Help:      help,
-		},
-		labels,
-	)
-	col, err := registerOrExisting(cv)
-	if err != nil && !errors.Is(err, ErrMetricAlreadyExists) {
-		return nil, err
+func NewCounterVec(subsystem, name, help string, labelNames []string, constLabels prometheus.Labels) CounterVec {
+	if !isOn() {
+		return noopCounterVec{}
 	}
-	existing, ok := col.(*prometheus.CounterVec)
-	if !ok {
-		return nil, fmt.Errorf(metricsErrorFormat, "type mismatch", metricer.nameSpace, subsystem, name, labels)
-	}
-	return existing, nil
+	v := prometheus.NewCounterVec(prometheus.CounterOpts{
+		Namespace:   namespace(),
+		Subsystem:   subsystem,
+		Name:        name,
+		Help:        help,
+		ConstLabels: constLabels,
+	}, labelNames)
+	v = registerCounterVec(v)
+	return promCounterVec{v: v}
 }
 
-// ----------------- Gauge -----------------
-
-func NewGauge(name, subsystem, help string) (prometheus.Gauge, error) {
+func NewGauge(subsystem, name, help string, constLabels prometheus.Labels) Gauge {
+	if !isOn() {
+		return noopGauge{}
+	}
 	g := prometheus.NewGauge(prometheus.GaugeOpts{
-		Namespace: metricer.nameSpace,
-		Subsystem: subsystem,
-		Name:      name,
-		Help:      help,
+		Namespace:   namespace(),
+		Subsystem:   subsystem,
+		Name:        name,
+		Help:        help,
+		ConstLabels: constLabels,
 	})
-	col, err := registerOrExisting(g)
-	if err != nil && !errors.Is(err, ErrMetricAlreadyExists) {
-		return nil, err
-	}
-	existing, ok := col.(prometheus.Gauge)
-	if !ok {
-		return nil, fmt.Errorf(metricsErrorFormat, "type mismatch", metricer.nameSpace, subsystem, name, nil)
-	}
-	return existing, nil
+	g = registerGauge(g)
+	return promGauge{g: g}
 }
 
-func NewGaugeVec(subsystem, name, help string, labels []string) (*prometheus.GaugeVec, error) {
-	gv := prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Namespace: metricer.nameSpace,
-			Subsystem: subsystem,
-			Name:      name,
-			Help:      help,
-		},
-		labels,
-	)
-	col, err := registerOrExisting(gv)
-	if err != nil && !errors.Is(err, ErrMetricAlreadyExists) {
-		return nil, err
+func NewGaugeVec(subsystem, name, help string, labelNames []string, constLabels prometheus.Labels) GaugeVec {
+	if !isOn() {
+		return noopGaugeVec{}
 	}
-	existing, ok := col.(*prometheus.GaugeVec)
-	if !ok {
-		return nil, fmt.Errorf(metricsErrorFormat, "type mismatch", metricer.nameSpace, subsystem, name, labels)
-	}
-	return existing, nil
+	v := prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace:   namespace(),
+		Subsystem:   subsystem,
+		Name:        name,
+		Help:        help,
+		ConstLabels: constLabels,
+	}, labelNames)
+	v = registerGaugeVec(v)
+	return promGaugeVec{v: v}
 }
 
-// ----------------- Histogram -----------------
-
-func NewHistogram(name, subsystem, help string, buckets []float64) (prometheus.Histogram, error) {
+func NewHistogram(subsystem, name, help string, buckets []float64, constLabels prometheus.Labels) Histogram {
+	if !isOn() {
+		return noopHistogram{}
+	}
+	if len(buckets) == 0 {
+		buckets = prometheus.DefBuckets
+	}
 	h := prometheus.NewHistogram(prometheus.HistogramOpts{
-		Namespace: metricer.nameSpace,
-		Subsystem: subsystem,
-		Name:      name,
-		Help:      help,
-		Buckets:   buckets, // можно передать prometheus.DefBuckets
+		Namespace:   namespace(),
+		Subsystem:   subsystem,
+		Name:        name,
+		Help:        help,
+		ConstLabels: constLabels,
+		Buckets:     buckets,
 	})
-	col, err := registerOrExisting(h)
-	if err != nil && !errors.Is(err, ErrMetricAlreadyExists) {
-		return nil, err
-	}
-	existing, ok := col.(prometheus.Histogram)
-	if !ok {
-		return nil, fmt.Errorf(metricsErrorFormat, "type mismatch", metricer.nameSpace, subsystem, name, nil)
-	}
-	return existing, nil
+	h = registerHistogram(h)
+	return promHist{o: h}
 }
 
-func NewHistogramVec(subsystem, name, help string, buckets []float64, labels []string) (*prometheus.HistogramVec, error) {
-	hv := prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Namespace: metricer.nameSpace,
-			Subsystem: subsystem,
-			Name:      name,
-			Help:      help,
-			Buckets:   buckets,
-		},
-		labels,
-	)
-	col, err := registerOrExisting(hv)
-	if err != nil && !errors.Is(err, ErrMetricAlreadyExists) {
-		return nil, err
+func NewHistogramVec(subsystem, name, help string, buckets []float64, labelNames []string, constLabels prometheus.Labels) HistogramVec {
+	if !isOn() {
+		return noopHistVec{}
 	}
-	existing, ok := col.(*prometheus.HistogramVec)
-	if !ok {
-		return nil, fmt.Errorf(metricsErrorFormat, "type mismatch", metricer.nameSpace, subsystem, name, labels)
+	if len(buckets) == 0 {
+		buckets = prometheus.DefBuckets
 	}
-	return existing, nil
+	v := prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Namespace:   namespace(),
+		Subsystem:   subsystem,
+		Name:        name,
+		Help:        help,
+		ConstLabels: constLabels,
+		Buckets:     buckets,
+	}, labelNames)
+	v = registerHistVec(v)
+	return promHistVec{v: v}
 }
 
-// ----------------- Summary -----------------
+type SummaryOpts struct {
+	Objectives map[float64]float64
+	MaxAge     time.Duration
+	AgeBuckets uint32
+	BufCap     uint32
+}
 
-func NewSummary(name, subsystem, help string, objectives map[float64]float64) (prometheus.Summary, error) {
+func NewSummary(subsystem, name, help string, opts SummaryOpts, constLabels prometheus.Labels) Summary {
+	if !isOn() {
+		return noopSummary{}
+	}
 	s := prometheus.NewSummary(prometheus.SummaryOpts{
-		Namespace:  metricer.nameSpace,
-		Subsystem:  subsystem,
-		Name:       name,
-		Help:       help,
-		Objectives: objectives, // можно nil -> без квантилей
+		Namespace:   namespace(),
+		Subsystem:   subsystem,
+		Name:        name,
+		Help:        help,
+		ConstLabels: constLabels,
+		Objectives:  opts.Objectives,
+		MaxAge:      opts.MaxAge,
+		AgeBuckets:  opts.AgeBuckets,
+		BufCap:      opts.BufCap,
 	})
-	col, err := registerOrExisting(s)
-	if err != nil && !errors.Is(err, ErrMetricAlreadyExists) {
-		return nil, err
-	}
-	existing, ok := col.(prometheus.Summary)
-	if !ok {
-		return nil, fmt.Errorf(metricsErrorFormat, "type mismatch", metricer.nameSpace, subsystem, name, nil)
-	}
-	return existing, nil
+	s = registerSummary(s)
+	return promSumm{o: s}
 }
 
-func NewSummaryVec(subsystem, name, help string, objectives map[float64]float64, labels []string) (*prometheus.SummaryVec, error) {
-	sv := prometheus.NewSummaryVec(
-		prometheus.SummaryOpts{
-			Namespace:  metricer.nameSpace,
-			Subsystem:  subsystem,
-			Name:       name,
-			Help:       help,
-			Objectives: objectives,
-		},
-		labels,
-	)
-	col, err := registerOrExisting(sv)
-	if err != nil && !errors.Is(err, ErrMetricAlreadyExists) {
-		return nil, err
+func NewSummaryVec(subsystem, name, help string, opts SummaryOpts, labelNames []string, constLabels prometheus.Labels) SummaryVec {
+	if !isOn() {
+		return noopSummaryVec{}
 	}
-	existing, ok := col.(*prometheus.SummaryVec)
-	if !ok {
-		return nil, fmt.Errorf(metricsErrorFormat, "type mismatch", metricer.nameSpace, subsystem, name, labels)
-	}
-	return existing, nil
+	v := prometheus.NewSummaryVec(prometheus.SummaryOpts{
+		Namespace:   namespace(),
+		Subsystem:   subsystem,
+		Name:        name,
+		Help:        help,
+		ConstLabels: constLabels,
+		Objectives:  opts.Objectives,
+		MaxAge:      opts.MaxAge,
+		AgeBuckets:  opts.AgeBuckets,
+		BufCap:      opts.BufCap,
+	}, labelNames)
+	v = registerSummVec(v)
+	return promSummVec{v: v}
 }

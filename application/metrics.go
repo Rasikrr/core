@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Rasikrr/core/http"
+	"github.com/Rasikrr/core/log"
 	"github.com/Rasikrr/core/metrics"
 )
 
@@ -16,6 +17,10 @@ func (a *App) initMetrics(ctx context.Context) error {
 	)
 	if metrics.Enabled() {
 		a.metricsServer = http.NewMetricsServer(ctx, a.Config().MetricsConfig())
+		a.starters.Add(a.metricsServer)
+		a.closers.Add(a.metricsServer)
+		log.Infof(ctx, "metrics server initialized")
+		log.Info(ctx, "metric initialized")
 	}
 	return nil
 }

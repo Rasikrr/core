@@ -2,6 +2,7 @@ package nats
 
 import (
 	"context"
+
 	"github.com/Rasikrr/core/interfaces"
 	"github.com/Rasikrr/core/log"
 	"github.com/nats-io/nats.go"
@@ -18,6 +19,7 @@ type publisher struct {
 }
 
 func NewPublisher(addr string) (Publisher, error) {
+	initNATSMetrics()
 	conn, err := nats.Connect(addr)
 	if err != nil {
 		return nil, err
@@ -32,6 +34,11 @@ func (p *publisher) Publish(_ context.Context, subject string, m proto.Message) 
 	if err != nil {
 		return err
 	}
+
+	if len(bb) > 0 {
+		metrics.pubBytes.WithLabelValues(subject).Observe(float64(len(bb)))
+	}
+	metrics.pubTotal.WithLabelValues(subject).Inc()
 
 	msg := &nats.Msg{
 		Subject: subject,
