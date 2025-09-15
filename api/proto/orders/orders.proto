@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package orders.v1;
+
+option go_package = "github.com/your/module/gen/orders;ordersv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+
+service Orders{
+  rpc CreateOrder(Order) returns(google.protobuf.Empty);
+}
+
+enum OrderStatus {
+  ORDER_STATUS_UNSPECIFIED = 0;
+  PENDING  = 1;
+  PAID     = 2;
+  SHIPPED  = 3;
+  CANCELED = 4;
+}
+
+message OrderItem {
+  string sku   = 1;  // артикул
+  uint32 qty   = 2;  // количество
+  double price = 3;  // цена за единицу (в валюте заказа)
+}
+
+message Order {
+  string id                       = 1;
+  string customer_id              = 2;
+  OrderStatus status              = 3;
+  repeated OrderItem items        = 4;
+  double amount                   = 5;  // итоговая сумма
+  string currency                 = 6;  // "USD", "KZT" и т.п.
+  google.protobuf.Timestamp created_at = 7;
+}

@@ -1,0 +1,61 @@
+version: "3.8"
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.listen-address=:9090
+      - --web.enable-lifecycle
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.4.3
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_DEFAULT_THEME=light
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  nats:
+    image: nats:latest
+    ports:
+      - "4222:4222"
+    restart: unless-stopped
+
+  # >>> утилиты для публикации/подписки
+  nats_tools:
+    image: natsio/nats-box:latest
+    depends_on:
+      - nats
+    # держим контейнер "живым" для exec
+    entrypoint: ["/bin/sh","-lc","sleep infinity"]
+    stdin_open: true
+    tty: true
+
+  backend:
+    build: .
+    container_name: backend
+    depends_on:
+      - nats
+    ports:
+      - "8081:8080"
+      - "9100:9100"
+      - "3001:3001"
+
+volumes:
+  prometheus_data:
+  grafana_data:

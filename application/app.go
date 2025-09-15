@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	"github.com/Rasikrr/core/brokers/nats"
+	"github.com/Rasikrr/core/brokers/nats/subscriber"
 	"github.com/Rasikrr/core/config"
 	"github.com/Rasikrr/core/database"
 	coreGrpc "github.com/Rasikrr/core/grpc"
@@ -210,6 +211,7 @@ func (a *App) WithSubscribers(handlers ...nats.SubscriberHandler) {
 
 func (a *App) initSubscribers(_ context.Context) {
 	if a.Config().NATS.Required && a.subscriber != nil {
+		a.subscriberHandlers = append(a.subscriberHandlers, subscriber.NewOrdersHandler("orders"))
 		a.subscriber.WithHandlers(a.subscriberHandlers...)
 	}
 }

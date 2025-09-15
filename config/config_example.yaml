@@ -7,7 +7,7 @@ log:
   add_source: true
 
 metrics:
-  enabled: false
+  enabled: true
   namespace: core
   prometheus:
     port: 9100
@@ -20,7 +20,7 @@ http:
 
 grpc:
   host: 0.0.0.0
-  port: 3000
+  port: 3001
   required: true
 
 postgres:
@@ -37,8 +37,8 @@ redis:
   read_timeout: 1m
 
 nats:
-  required: false
-  dsn: localhost:4222
+  required: true
+  dsn: nats:4222
   queue: example_queue # It is like load balancer, read more about it here: https://docs.nats.io/nats-concepts/core-nats/queue
 
 

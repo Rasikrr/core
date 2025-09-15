@@ -4,6 +4,7 @@ import (
 	"context"
 
 	coreGrpc "github.com/Rasikrr/core/grpc"
+	ordersGRPC "github.com/Rasikrr/core/grpc/orders"
 	"github.com/Rasikrr/core/log"
 )
 
@@ -21,6 +22,7 @@ func (a *App) initGRPC(ctx context.Context) error {
 
 	a.starters.Add(a.grpcServer)
 	a.closers.Add(a.grpcServer)
+	ordersGRPC.NewServer(a.GrpcServer().Srv())
 
 	return nil
 }
