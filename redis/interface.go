@@ -2,9 +2,10 @@ package redis
 
 import (
 	"errors"
+	"time"
+
 	"github.com/Rasikrr/core/interfaces"
 	"golang.org/x/net/context"
-	"time"
 )
 
 var (
@@ -14,6 +15,7 @@ var (
 type Cache interface {
 	interfaces.Closer
 	Get(ctx context.Context, key string) (any, error)
+	GetBool(ctx context.Context, key string) (bool, error)
 	MGet(ctx context.Context, keys ...string) ([]any, error)
 	Set(ctx context.Context, key string, value any) error
 	MSet(ctx context.Context, keyValues ...any) error

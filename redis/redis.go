@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/Rasikrr/core/config"
 	"github.com/Rasikrr/core/log"
 	redis "github.com/redis/go-redis/v9"
 	"github.com/samber/lo"
-	"strings"
-	"time"
 )
 
 type cache struct {
@@ -59,6 +60,18 @@ func (r *cache) Get(ctx context.Context, key string) (any, error) {
 			return nil, ErrNotFound
 		}
 		return nil, err
+	}
+	return val, nil
+}
+
+func (r *cache) GetBool(ctx context.Context, key string) (bool, error) {
+	k := r.getKey(key)
+	val, err := r.redisStringCmd(ctx, k).Bool()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return false, ErrNotFound
+		}
+		return false, err
 	}
 	return val, nil
 }
