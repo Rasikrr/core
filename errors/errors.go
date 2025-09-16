@@ -26,6 +26,7 @@ var (
 	ErrInternalServerError = NewError("internal server error", 500)
 	ErrUnauthorized        = NewError("unauthorized", 401)
 	ErrForbidden           = NewError("forbidden", 403)
+	ErrMethodNotAllowed    = NewError("method not allowed", 405)
 	ErrConflict            = NewError("conflict", 409)
 	ErrBadRequestBody      = NewError("bad request body", 400)
 	ErrNotImplemented      = NewError("not implemented", 501)
