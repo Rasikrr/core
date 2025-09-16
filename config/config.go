@@ -23,7 +23,7 @@ var (
 
 type Config struct {
 	AppName     string           `yaml:"name"`
-	Environment enum.Environment `yaml:"environment"`
+	Environment enum.Environment `yaml:"environment" env:"ENVIRONMENT"`
 	Logger      LoggerConfig     `yaml:"log"`
 	HTTP        HTTPConfig       `yaml:"http"`
 	GRPC        GRPCConfig       `yaml:"grpc"`
