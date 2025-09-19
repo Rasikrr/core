@@ -9,11 +9,11 @@ import (
 	"strings"
 )
 
-const _EnvironmentName = "devprod"
+const _EnvironmentName = "devprodstage"
 
-var _EnvironmentIndex = [...]uint8{0, 3, 7}
+var _EnvironmentIndex = [...]uint8{0, 3, 7, 12}
 
-const _EnvironmentLowerName = "devprod"
+const _EnvironmentLowerName = "devprodstage"
 
 func (i Environment) String() string {
 	if i >= Environment(len(_EnvironmentIndex)-1) {
@@ -28,20 +28,24 @@ func _EnvironmentNoOp() {
 	var x [1]struct{}
 	_ = x[EnvironmentDev-(0)]
 	_ = x[EnvironmentProd-(1)]
+	_ = x[EnvironmentStage-(2)]
 }
 
-var _EnvironmentValues = []Environment{EnvironmentDev, EnvironmentProd}
+var _EnvironmentValues = []Environment{EnvironmentDev, EnvironmentProd, EnvironmentStage}
 
 var _EnvironmentNameToValueMap = map[string]Environment{
-	_EnvironmentName[0:3]:      EnvironmentDev,
-	_EnvironmentLowerName[0:3]: EnvironmentDev,
-	_EnvironmentName[3:7]:      EnvironmentProd,
-	_EnvironmentLowerName[3:7]: EnvironmentProd,
+	_EnvironmentName[0:3]:       EnvironmentDev,
+	_EnvironmentLowerName[0:3]:  EnvironmentDev,
+	_EnvironmentName[3:7]:       EnvironmentProd,
+	_EnvironmentLowerName[3:7]:  EnvironmentProd,
+	_EnvironmentName[7:12]:      EnvironmentStage,
+	_EnvironmentLowerName[7:12]: EnvironmentStage,
 }
 
 var _EnvironmentNames = []string{
 	_EnvironmentName[0:3],
 	_EnvironmentName[3:7],
+	_EnvironmentName[7:12],
 }
 
 // EnvironmentString retrieves an enum value from the enum constants string name.

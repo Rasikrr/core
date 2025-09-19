@@ -6,4 +6,5 @@ type Environment uint8
 const (
 	EnvironmentDev Environment = iota
 	EnvironmentProd
+	EnvironmentStage
 )
