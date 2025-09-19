@@ -14,6 +14,7 @@ import (
 	"github.com/Rasikrr/core/interfaces"
 	"github.com/Rasikrr/core/log"
 	"github.com/Rasikrr/core/redis"
+	"github.com/Rasikrr/core/version"
 	"go.uber.org/multierr"
 )
 
@@ -51,6 +52,7 @@ func NewAppWithConfig(ctx context.Context, cfg *config.Config) *App {
 		name:   cfg.Name(),
 		config: cfg,
 	}
+	version.SetVersion(cfg.Env())
 	app.InitLogger()
 	log.Info(context.Background(), "logger initialized")
 
