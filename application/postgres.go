@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+
 	"github.com/Rasikrr/core/database"
 	"github.com/Rasikrr/core/log"
 )
@@ -16,6 +17,7 @@ func (a *App) initPostgres(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	a.postgresTXManager = database.NewTXManager(a.postgres.Pool())
 
 	log.Info(ctx, "postgres initialized")
 

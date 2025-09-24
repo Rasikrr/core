@@ -2,13 +2,14 @@ package database
 
 import (
 	"context"
+	"time"
+
 	"github.com/Rasikrr/core/config"
 	"github.com/Rasikrr/core/log"
 	"github.com/avast/retry-go"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"time"
 )
 
 type Postgres struct {
@@ -59,7 +60,7 @@ func (p *Postgres) Query(ctx context.Context, sql string, args ...any) (pgx.Rows
 		elapsed := time.Since(start)
 		log.Debugf(ctx, "Query: %s; elapsed: %v; args: %v\n", sql, elapsed, args)
 	}()
-	return p.pool.Query(ctx, sql, args...)
+	return p.GetQuerier(ctx).Query(ctx, sql, args...)
 }
 
 func (p *Postgres) Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error) {
@@ -68,7 +69,7 @@ func (p *Postgres) Exec(ctx context.Context, sql string, args ...any) (pgconn.Co
 		elapsed := time.Since(start)
 		log.Debugf(ctx, "Exec: %s; elapsed: %v; args: %v\n", sql, elapsed, args)
 	}()
-	return p.pool.Exec(ctx, sql, args...)
+	return p.GetQuerier(ctx).Exec(ctx, sql, args...)
 }
 
 func (p *Postgres) QueryRow(ctx context.Context, sql string, args ...any) pgx.Row {
@@ -77,7 +78,7 @@ func (p *Postgres) QueryRow(ctx context.Context, sql string, args ...any) pgx.Ro
 		elapsed := time.Since(start)
 		log.Debugf(ctx, "QueryRow: %s; elapsed: %v; args: %v\n", sql, elapsed, args)
 	}()
-	return p.pool.QueryRow(ctx, sql, args...)
+	return p.GetQuerier(ctx).QueryRow(ctx, sql, args...)
 }
 
 func (p *Postgres) BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error) {

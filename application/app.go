@@ -20,10 +20,13 @@ import (
 
 // nolint: unused
 type App struct {
-	name       string
-	config     *config.Config
-	redis      redis.Cache
-	postgres   *database.Postgres
+	name   string
+	config *config.Config
+	redis  redis.Cache
+
+	postgres          *database.Postgres
+	postgresTXManager database.TXManager
+
 	httpServer *http.Server
 	grpcServer *coreGrpc.Server
 

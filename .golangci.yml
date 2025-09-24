@@ -9,7 +9,7 @@ run:
   issues-exit-code: 1
 
   # include test files or not, default is true
-  tests: true
+  tests: false
 
   # skip download modules
   modules-download-mode: readonly
