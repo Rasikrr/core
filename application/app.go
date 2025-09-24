@@ -177,6 +177,13 @@ func (a *App) Postgres() *database.Postgres {
 	return a.postgres
 }
 
+func (a *App) PostgresTXManager() database.TXManager {
+	if a.postgresTXManager == nil {
+		log.Fatalf(context.Background(), "postgres tx manager is not initialized or not required. please check your config")
+	}
+	return a.postgresTXManager
+}
+
 func (a *App) HTTPServer() *http.Server {
 	if a.httpServer == nil {
 		log.Fatalf(context.Background(), "http server is not initialized or not required. please check your config")
