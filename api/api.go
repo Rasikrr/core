@@ -3,15 +3,11 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	coreError "github.com/Rasikrr/core/errors"
 	"io"
 	"net/http"
-)
 
-type ErrorResponse struct {
-	Error  string `json:"error"`
-	Status int    `json:"status"`
-}
+	coreError "github.com/Rasikrr/core/errors"
+)
 
 type QueryParametersGetter interface {
 	GetQueryParameters(r *http.Request) error
@@ -44,6 +40,29 @@ func SendData(w http.ResponseWriter, data interface{}, statusCode int) {
 	w.Write(bb)
 }
 
+// nolint: errcheck
+func SendError(w http.ResponseWriter, err error) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var (
+		errorResp ErrorResponse
+		coreErr   *coreError.CoreError
+	)
+
+	if errors.As(err, &coreErr) {
+		errorResp.Error = coreErr.Message
+		errorResp.StatusCode = coreErr.Code
+	} else {
+		coreErr = coreError.GRPCErrorToHTTP(err)
+		errorResp.Error = coreErr.Message
+		errorResp.StatusCode = coreErr.Code
+	}
+
+	bb, _ := json.Marshal(errorResp)
+	w.WriteHeader(errorResp.StatusCode)
+	w.Write(bb)
+}
+
 func GetData(r *http.Request, data interface{}) error {
 	queryParams, ok := data.(QueryParametersGetter)
 	if ok {
@@ -71,27 +90,4 @@ func GetData(r *http.Request, data interface{}) error {
 		}
 	}
 	return nil
-}
-
-// nolint: errcheck
-func SendError(w http.ResponseWriter, err error) {
-	w.Header().Set("Content-Type", "application/json")
-
-	var (
-		errorResp ErrorResponse
-		coreErr   *coreError.CoreError
-	)
-
-	if errors.As(err, &coreErr) {
-		errorResp.Error = coreErr.Message
-		errorResp.Status = coreErr.Code
-	} else {
-		coreErr = coreError.GRPCErrorToHTTP(err)
-		errorResp.Error = coreErr.Message
-		errorResp.Status = coreErr.Code
-	}
-
-	bb, _ := json.Marshal(errorResp)
-	w.WriteHeader(errorResp.Status)
-	w.Write(bb)
 }
