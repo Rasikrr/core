@@ -44,8 +44,8 @@ func easyjsonD2b7633eDecodeGithubComRasikrrCoreApi(in *jlexer.Lexer, out *Succes
 			} else {
 				out.Data = in.Interface()
 			}
-		case "status":
-			out.Status = string(in.String())
+		case "message":
+			out.Message = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -72,9 +72,9 @@ func easyjsonD2b7633eEncodeGithubComRasikrrCoreApi(out *jwriter.Writer, in Succe
 		}
 	}
 	{
-		const prefix string = ",\"status\":"
+		const prefix string = ",\"message\":"
 		out.RawString(prefix)
-		out.String(string(in.Status))
+		out.String(string(in.Message))
 	}
 	out.RawByte('}')
 }
@@ -121,10 +121,10 @@ func easyjsonD2b7633eDecodeGithubComRasikrrCoreApi1(in *jlexer.Lexer, out *Error
 			continue
 		}
 		switch key {
-		case "error":
-			out.Error = string(in.String())
-		case "status":
-			out.StatusCode = int(in.Int())
+		case "message":
+			out.Message = string(in.String())
+		case "code":
+			out.Code = int(in.Int())
 		default:
 			in.SkipRecursive()
 		}
@@ -140,14 +140,14 @@ func easyjsonD2b7633eEncodeGithubComRasikrrCoreApi1(out *jwriter.Writer, in Erro
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"error\":"
+		const prefix string = ",\"message\":"
 		out.RawString(prefix[1:])
-		out.String(string(in.Error))
+		out.String(string(in.Message))
 	}
 	{
-		const prefix string = ",\"status\":"
+		const prefix string = ",\"code\":"
 		out.RawString(prefix)
-		out.Int(int(in.StatusCode))
+		out.Int(int(in.Code))
 	}
 	out.RawByte('}')
 }
@@ -194,8 +194,8 @@ func easyjsonD2b7633eDecodeGithubComRasikrrCoreApi2(in *jlexer.Lexer, out *Empty
 			continue
 		}
 		switch key {
-		case "status":
-			out.Status = string(in.String())
+		case "message":
+			out.Message = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -211,9 +211,9 @@ func easyjsonD2b7633eEncodeGithubComRasikrrCoreApi2(out *jwriter.Writer, in Empt
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"status\":"
+		const prefix string = ",\"message\":"
 		out.RawString(prefix[1:])
-		out.String(string(in.Status))
+		out.String(string(in.Message))
 	}
 	out.RawByte('}')
 }

@@ -3,28 +3,36 @@ package api
 //go:generate easyjson -all models.go
 
 type EmptySuccessResponse struct {
-	Status string `json:"status"`
+	Message string `json:"message"`
 }
 
 type ErrorResponse struct {
-	Error      string `json:"error"`
-	StatusCode int    `json:"status"`
+	Message string `json:"message"`
+	Code    int    `json:"code"`
 }
 
 type SuccessResponse struct {
-	Data   interface{} `json:"data"`
-	Status string      `json:"status"`
+	Data    interface{} `json:"data"`
+	Message string      `json:"message"`
 }
 
-func NewEmptySuccessResponse() EmptySuccessResponse {
-	return EmptySuccessResponse{
-		Status: "success",
+func NewEmptySuccessResponse(message ...string) EmptySuccessResponse {
+	resp := EmptySuccessResponse{
+		Message: "success",
 	}
+	if len(message) > 0 {
+		resp.Message = message[0]
+	}
+	return resp
 }
 
-func NewSuccessResponse(data interface{}) SuccessResponse {
-	return SuccessResponse{
-		Data:   data,
-		Status: "success",
+func NewSuccessResponse(data interface{}, message ...string) SuccessResponse {
+	resp := SuccessResponse{
+		Data:    data,
+		Message: "success",
 	}
+	if len(message) > 0 {
+		resp.Message = message[0]
+	}
+	return resp
 }

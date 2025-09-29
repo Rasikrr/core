@@ -50,16 +50,16 @@ func SendError(w http.ResponseWriter, err error) {
 	)
 
 	if errors.As(err, &coreErr) {
-		errorResp.Error = coreErr.Message
-		errorResp.StatusCode = coreErr.Code
+		errorResp.Message = coreErr.Message
+		errorResp.Code = coreErr.Code
 	} else {
 		coreErr = coreError.GRPCErrorToHTTP(err)
-		errorResp.Error = coreErr.Message
-		errorResp.StatusCode = coreErr.Code
+		errorResp.Message = coreErr.Message
+		errorResp.Code = coreErr.Code
 	}
 
 	bb, _ := json.Marshal(errorResp)
-	w.WriteHeader(errorResp.StatusCode)
+	w.WriteHeader(errorResp.Code)
 	w.Write(bb)
 }
 
