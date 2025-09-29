@@ -2,32 +2,59 @@ package http
 
 import (
 	"fmt"
-	"github.com/Rasikrr/core/log"
 	"net/http"
+	"strings"
+
+	"github.com/Rasikrr/core/log"
 )
 
 type Middleware interface {
 	Handle(next http.Handler) http.Handler
 }
 
-type CORSMiddleware struct{}
+type CORSMiddleware struct {
+	origins []string
+	methods []string
+	headers []string
+	creds   bool
+}
 
-func NewCORSMiddleware() Middleware {
+func NewCORSMiddleware() *CORSMiddleware {
 	return &CORSMiddleware{}
+}
+
+func (c *CORSMiddleware) WithOrigins(origins ...string) *CORSMiddleware {
+	c.origins = append(c.origins, origins...)
+	return c
+}
+
+func (c *CORSMiddleware) WithMethods(methods ...string) *CORSMiddleware {
+	c.methods = append(c.methods, methods...)
+	return c
+}
+
+func (c *CORSMiddleware) WithHeaders(headers ...string) *CORSMiddleware {
+	c.headers = append(c.headers, headers...)
+	return c
+}
+
+func (c *CORSMiddleware) WithCredentials(creds bool) *CORSMiddleware {
+	c.creds = creds
+	return c
 }
 
 func (m *CORSMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Origin", strings.Join(m.origins, ", "))
+		w.Header().Set("Access-Control-Allow-Methods", strings.Join(m.methods, ", "))
+		w.Header().Set("Access-Control-Allow-Headers", strings.Join(m.headers, ", "))
+		w.Header().Set("Access-Control-Allow-Credentials", fmt.Sprintf("%v", m.creds))
 
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusNoContent)
-		} else {
-			next.ServeHTTP(w, r)
+			return
 		}
+		next.ServeHTTP(w, r)
 	})
 }
 
