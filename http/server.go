@@ -48,7 +48,6 @@ func NewServer(
 		},
 		router: router,
 	}
-	srv.WithMiddlewares(NewCORSMiddleware())
 	srv.WithMiddlewares(NewRecoverMiddleware())
 
 	initHTTPMetrics()
