@@ -43,12 +43,12 @@ func (c *CORSMiddleware) WithCredentials(creds bool) *CORSMiddleware {
 	return c
 }
 
-func (m *CORSMiddleware) Handle(next http.Handler) http.Handler {
+func (c *CORSMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", strings.Join(m.origins, ", "))
-		w.Header().Set("Access-Control-Allow-Methods", strings.Join(m.methods, ", "))
-		w.Header().Set("Access-Control-Allow-Headers", strings.Join(m.headers, ", "))
-		w.Header().Set("Access-Control-Allow-Credentials", fmt.Sprintf("%v", m.creds))
+		w.Header().Set("Access-Control-Allow-Origin", strings.Join(c.origins, ", "))
+		w.Header().Set("Access-Control-Allow-Methods", strings.Join(c.methods, ", "))
+		w.Header().Set("Access-Control-Allow-Headers", strings.Join(c.headers, ", "))
+		w.Header().Set("Access-Control-Allow-Credentials", fmt.Sprintf("%v", c.creds))
 
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusNoContent)
