@@ -45,7 +45,22 @@ func (c *CORSMiddleware) WithCredentials(creds bool) *CORSMiddleware {
 
 func (c *CORSMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", strings.Join(c.origins, ", "))
+		origin := r.Header.Get("Origin")
+
+		allowed := false
+		for _, o := range c.origins {
+			if o == "*" || o == origin {
+				w.Header().Set("Access-Control-Allow-Origin", o)
+				allowed = true
+				break
+			}
+		}
+
+		if !allowed && len(c.origins) > 0 {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+
 		w.Header().Set("Access-Control-Allow-Methods", strings.Join(c.methods, ", "))
 		w.Header().Set("Access-Control-Allow-Headers", strings.Join(c.headers, ", "))
 		w.Header().Set("Access-Control-Allow-Credentials", fmt.Sprintf("%v", c.creds))
