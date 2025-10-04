@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/Rasikrr/core/config"
@@ -60,7 +61,18 @@ func (p *Postgres) Query(ctx context.Context, sql string, args ...any) (pgx.Rows
 		elapsed := time.Since(start)
 		log.Debugf(ctx, "Query: %s; elapsed: %v; args: %v\n", sql, elapsed, args)
 	}()
-	return p.GetQuerier(ctx).Query(ctx, sql, args...)
+	querier := p.GetQuerier(ctx)
+	switch querier.(type) {
+	case pgx.Tx:
+		log.Infof(ctx, "Transaction Query: %s; args: %v\n", sql, args)
+		return querier.Query(ctx, sql, args...)
+	case *pgxpool.Pool:
+		log.Infof(ctx, "Pool Query: %s; args: %v\n", sql, args)
+		return querier.Query(ctx, sql, args...)
+	default:
+		return nil, fmt.Errorf("invalid querier type: %T", querier)
+	}
+	return nil, nil
 }
 
 func (p *Postgres) Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error) {
