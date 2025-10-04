@@ -45,15 +45,11 @@ func (c *CORSMiddleware) WithCredentials(creds bool) *CORSMiddleware {
 
 func (c *CORSMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		l := log.With(log.String("middleware", "CORS"))
-		ctx := r.Context()
 		origin := r.Header.Get("Origin")
-		l.Debug(ctx, "get origin", log.String("origin", origin))
 
 		allowed := false
 		for _, o := range c.origins {
 			if o == "*" || o == origin {
-				l.Debug(ctx, "origin allowed", log.String("origin", origin))
 				w.Header().Set("Access-Control-Allow-Origin", o)
 				allowed = true
 				break
@@ -61,7 +57,6 @@ func (c *CORSMiddleware) Handle(next http.Handler) http.Handler {
 		}
 
 		if !allowed && len(c.origins) > 0 {
-			l.Debug(ctx, "origin not allowed", log.String("origin", origin))
 			w.WriteHeader(http.StatusForbidden)
 			return
 		}
