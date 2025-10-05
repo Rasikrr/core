@@ -2,10 +2,11 @@ package http
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/Rasikrr/core/config"
 	"github.com/go-chi/chi/v5"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"net/http"
 )
 
 const (
@@ -30,7 +31,7 @@ func NewMetricsServer(_ context.Context, cfg config.Metrics) *Server {
 		router: router,
 	}
 	srv.WithMiddlewares(NewRecoverMiddleware())
-	srv.registerMiddlewares()
+	srv.registerDefaultMiddlewares()
 
 	router.Handle("/metrics", promhttp.Handler())
 

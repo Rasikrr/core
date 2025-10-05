@@ -21,12 +21,11 @@ const (
 )
 
 type Server struct {
-	name        string
-	port        string
-	host        string
-	srv         *http.Server
-	middlewares []Middleware
-	router      *chi.Mux
+	name   string
+	port   string
+	host   string
+	srv    *http.Server
+	router *chi.Mux
 }
 
 func NewServer(
@@ -48,13 +47,13 @@ func NewServer(
 		},
 		router: router,
 	}
+	srv.WithMiddlewares(NewCORSMiddleware())
 	srv.WithMiddlewares(NewRecoverMiddleware())
 
 	initHTTPMetrics()
 	srv.WithMiddlewares(m)
+	srv.registerDefaultMiddlewares()
 
-	srv.registerMiddlewares()
-	addHealthRoute(router)
 	return srv
 }
 
@@ -65,11 +64,14 @@ func (s *Server) WithControllers(controllers ...Controller) {
 }
 
 func (s *Server) WithMiddlewares(middlewares ...Middleware) {
-	s.middlewares = append(s.middlewares, middlewares...)
+	for _, m := range middlewares {
+		s.router.Use(m.Handle)
+	}
 }
 
 func (s *Server) Start(ctx context.Context) error {
 	log.Infof(ctx, "starting %s http server on %s", s.name, address(s.host, s.port))
+	addHealthRoute(s.router)
 	if err := s.srv.ListenAndServe(); err != nil {
 		if errors.Is(err, http.ErrServerClosed) {
 			return nil
@@ -79,10 +81,7 @@ func (s *Server) Start(ctx context.Context) error {
 	return nil
 }
 
-func (s *Server) registerMiddlewares() {
-	for _, m := range s.middlewares {
-		s.router.Use(m.Handle)
-	}
+func (s *Server) registerDefaultMiddlewares() {
 	// use default chi middlewares
 	s.router.Use(middleware.RequestID)
 	s.router.Use(middleware.RealIP)
