@@ -26,7 +26,10 @@ require (
 	google.golang.org/protobuf v1.36.6
 )
 
-require github.com/pkg/errors v0.8.1 // indirect
+require (
+	github.com/go-chi/cors v1.2.2 // indirect
+	github.com/pkg/errors v0.8.1 // indirect
+)
 
 require (
 	github.com/BurntSushi/toml v1.4.0 // indirect
