@@ -1,5 +1,7 @@
 package errors
 
+import "fmt"
+
 type CoreError struct {
 	Code    int
 	Message string
@@ -11,6 +13,13 @@ func (e *CoreError) Error() string {
 
 func (e *CoreError) StatusCode() int {
 	return e.Code
+}
+
+func (e *CoreError) Wrap(err error) *CoreError {
+	return &CoreError{
+		Code:    e.Code,
+		Message: fmt.Sprintf("%s: %v", e.Message, err),
+	}
 }
 
 func NewError(message string, code int) *CoreError {
