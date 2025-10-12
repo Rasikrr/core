@@ -15,6 +15,7 @@ import (
 	"github.com/Rasikrr/core/log"
 	"github.com/Rasikrr/core/redis"
 	"github.com/Rasikrr/core/version"
+	"github.com/robfig/cron/v3"
 	"go.uber.org/multierr"
 )
 
@@ -35,6 +36,10 @@ type App struct {
 	publisher          nats.Publisher
 	subscriber         nats.Subscriber
 	subscriberHandlers []nats.SubscriberHandler
+
+	jobManager  *JobManager
+	jobs        []interfaces.Job
+	cronOptions []cron.Option
 
 	starters Starters
 	closers  Closers
@@ -77,13 +82,16 @@ func NewAppWithConfig(ctx context.Context, cfg *config.Config) *App {
 	if err := app.initNats(ctx); err != nil {
 		log.Fatalf(ctx, "failed to init nats: %v", err)
 	}
-
 	return app
 }
 
 func (a *App) Start(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	a.cancelFunc = cancel
+
+	if err := a.initJobManager(ctx); err != nil {
+		return err
+	}
 
 	a.initSubscribers(ctx)
 	stopChan := make(chan struct{})
@@ -224,4 +232,12 @@ func (a *App) initSubscribers(_ context.Context) {
 	if a.Config().NATS.Required && a.subscriber != nil {
 		a.subscriber.WithHandlers(a.subscriberHandlers...)
 	}
+}
+
+func (a *App) WithCronJobs(jobs ...interfaces.Job) {
+	a.jobs = append(a.jobs, jobs...)
+}
+
+func (a *App) WithCronOptions(options ...cron.Option) {
+	a.cronOptions = append(a.cronOptions, options...)
 }

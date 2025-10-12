@@ -29,6 +29,7 @@ require (
 require (
 	github.com/go-chi/cors v1.2.2 // indirect
 	github.com/pkg/errors v0.8.1 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 )
 
 require (
