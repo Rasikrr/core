@@ -54,6 +54,14 @@ func Fatalf(ctx context.Context, format string, args ...any) {
 	Default().Fatalf(ctx, format, args...)
 }
 
+func Sentry(ctx context.Context, msg string, args ...Attr) {
+	Default().Sentry(ctx, msg, args...)
+}
+
+func Sentryf(ctx context.Context, format string, args ...any) {
+	Default().Sentryf(ctx, format, args...)
+}
+
 func With(args ...Attr) Logger {
 	return defaultLogger.With(args...)
 }
@@ -88,6 +96,8 @@ func replaceLevelAttr(_ []string, a slog.Attr) slog.Attr {
 		switch level {
 		case LevelFatal:
 			return slog.String(slog.LevelKey, FatalString)
+		case LevelSentry:
+			return slog.String(slog.LevelKey, SentryString)
 		}
 	}
 	return a

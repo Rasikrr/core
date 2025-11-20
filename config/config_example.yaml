@@ -7,6 +7,11 @@ log:
   level: info # debug, info, warn, error
   add_source: true
 
+sentry:
+  enabled: true
+  sample_rate: 1.0
+  traces_sample_rate: 0.1
+
 metrics:
   enabled: false
   namespace: core
@@ -85,3 +90,4 @@ env:
     type: "string"
     env_name: "EX_STRING"
     required: false
+
