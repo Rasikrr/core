@@ -4,13 +4,14 @@ name: core # name of application
 
 
 log:
-  level: info # debug, info, warn, error
+  level: debug # debug, info, warn, error
   add_source: true
 
 sentry:
   enabled: true
-  sample_rate: 1.0
-  traces_sample_rate: 0.1
+  sample_rate: 1.0 # [0.0, 1.0]
+  traces_sample_rate: 0.1 # [0.0, 1.0]
+  debug: true
 
 metrics:
   enabled: false

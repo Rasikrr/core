@@ -2,49 +2,47 @@ package sentry
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/Rasikrr/core/enum"
 	sentrySDK "github.com/getsentry/sentry-go"
 )
 
-var enabled bool
+var (
+	enabled atomic.Bool
+	once    sync.Once
+)
 
-// Init инициализирует Sentry SDK
-func Init(dsn string, environment enum.Environment, opts ...Option) error {
-	config := &Config{
-		SampleRate:       1.0,
-		TracesSampleRate: 0.1,
-		Debug:            false,
-	}
-
-	for _, opt := range opts {
-		opt(config)
-	}
-
-	err := sentrySDK.Init(sentrySDK.ClientOptions{
-		Dsn:              dsn,
-		Environment:      environment.String(),
-		SampleRate:       config.SampleRate,
-		TracesSampleRate: config.TracesSampleRate,
-		Debug:            config.Debug,
-		BeforeSend: func(event *sentrySDK.Event, hint *sentrySDK.EventHint) *sentrySDK.Event {
-			// Можно добавить фильтрацию или модификацию событий
-			return event
-		},
+func Init(config Config, env enum.Environment) error {
+	var initErr error
+	once.Do(func() {
+		initErr = sentrySDK.Init(sentrySDK.ClientOptions{
+			Dsn:              config.DSN,
+			Environment:      env.String(),
+			SampleRate:       config.SampleRate,
+			TracesSampleRate: config.TracesSampleRate,
+			Debug:            config.Debug,
+			BeforeSend: func(event *sentrySDK.Event, _ *sentrySDK.EventHint) *sentrySDK.Event {
+				return event
+			},
+		})
+		if initErr == nil {
+			enabled.Store(true)
+		}
 	})
-
-	if err == nil {
-		enabled = true
+	if initErr != nil {
+		return fmt.Errorf("sentry.Init: %v", initErr)
 	}
-
-	return err
+	return nil
 }
 
 // CaptureEvent отправляет событие в Sentry
 func CaptureEvent(ctx context.Context, level slog.Level, msg string, attrs map[string]any) {
-	if !enabled {
+	if !Enabled() {
 		return
 	}
 
@@ -88,7 +86,7 @@ func CaptureEvent(ctx context.Context, level slog.Level, msg string, attrs map[s
 
 // CaptureException отправляет ошибку в Sentry
 func CaptureException(err error) {
-	if !enabled {
+	if !Enabled() {
 		return
 	}
 	sentrySDK.CaptureException(err)
@@ -96,7 +94,7 @@ func CaptureException(err error) {
 
 // CaptureMessage отправляет сообщение в Sentry
 func CaptureMessage(msg string) {
-	if !enabled {
+	if !Enabled() {
 		return
 	}
 	sentrySDK.CaptureMessage(msg)
@@ -104,7 +102,7 @@ func CaptureMessage(msg string) {
 
 // Flush дожидается отправки всех событий (полезно перед завершением приложения)
 func Flush(timeout time.Duration) bool {
-	if !enabled {
+	if !Enabled() {
 		return true
 	}
 	return sentrySDK.Flush(timeout)
@@ -144,4 +142,8 @@ func toString(v any) string {
 	default:
 		return ""
 	}
+}
+
+func Enabled() bool {
+	return enabled.Load()
 }

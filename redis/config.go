@@ -1,4 +1,4 @@
-package config
+package redis
 
 import (
 	"fmt"
@@ -6,10 +6,11 @@ import (
 )
 
 var (
-	errRedisConfigRequired = fmt.Errorf("redis config error")
+	errConfigRequired = fmt.Errorf("redis config error")
 )
 
-type RedisConfig struct {
+// Config содержит настройки для подключения к Redis
+type Config struct {
 	Host        string        `yaml:"-" env:"REDIS_HOST"`
 	Port        int           `yaml:"-" env:"REDIS_PORT"`
 	User        string        `yaml:"-" env:"REDIS_USER"`
@@ -23,21 +24,22 @@ type RedisConfig struct {
 	PrefixKey   string        `yaml:"prefix_key"`
 }
 
-func (c RedisConfig) Validate() error {
+// Validate проверяет корректность конфигурации
+func (c Config) Validate() error {
 	if !c.Required {
 		return nil
 	}
 	if c.PoolSize == 0 {
-		return fmt.Errorf("pool_size is empty: %w", errRedisConfigRequired)
+		return fmt.Errorf("pool_size is empty: %w", errConfigRequired)
 	}
 	if c.MinIdle == 0 {
-		return fmt.Errorf("min_idle_conns is empty: %w", errRedisConfigRequired)
+		return fmt.Errorf("min_idle_conns is empty: %w", errConfigRequired)
 	}
 	if c.MaxIdle == 0 {
-		return fmt.Errorf("max_idle_conns is empty: %w", errRedisConfigRequired)
+		return fmt.Errorf("max_idle_conns is empty: %w", errConfigRequired)
 	}
 	if c.ReadTimeout == 0 {
-		return fmt.Errorf("read_timeout is empty: %w", errRedisConfigRequired)
+		return fmt.Errorf("read_timeout is empty: %w", errConfigRequired)
 	}
 	return nil
 }

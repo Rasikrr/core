@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/Rasikrr/core/config"
 	"github.com/Rasikrr/core/log"
 	"github.com/avast/retry-go"
 	"github.com/jackc/pgx/v5"
@@ -17,7 +16,7 @@ type Postgres struct {
 }
 
 // nolint: gosec
-func NewPostgres(ctx context.Context, cfg config.PostgresConfig) (*Postgres, error) {
+func NewPostgres(ctx context.Context, cfg Config) (*Postgres, error) {
 	conConfig, err := pgxpool.ParseConfig(cfg.DSN)
 	if err != nil {
 		return nil, err

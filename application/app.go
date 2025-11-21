@@ -64,6 +64,9 @@ func NewAppWithConfig(ctx context.Context, cfg *config.Config) *App {
 	app.InitLogger()
 	log.Info(context.Background(), "logger initialized")
 
+	if err := app.initSentry(ctx); err != nil {
+		log.Fatalf(ctx, "failed to initialize sentry: %v", err)
+	}
 	if err := app.initMetrics(ctx); err != nil {
 		log.Fatalf(ctx, "failed to init metrics: %v", err)
 	}

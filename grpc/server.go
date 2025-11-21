@@ -7,7 +7,6 @@ import (
 	"net"
 	"runtime/debug"
 
-	"github.com/Rasikrr/core/config"
 	"github.com/Rasikrr/core/log"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
@@ -27,7 +26,7 @@ type Server struct {
 }
 
 func NewServer(
-	cfg config.GRPCConfig,
+	cfg Config,
 ) *Server {
 	return &Server{
 		host:   cfg.Host,

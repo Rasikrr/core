@@ -9,13 +9,13 @@ import (
 
 // nolint: unparam
 func (a *App) initHTTP(ctx context.Context) error {
-	if !a.Config().HTTPConfig().Required {
+	if !a.Config().HTTP.Required {
 		return nil
 	}
 
 	a.httpServer = http.NewServer(
 		ctx,
-		a.Config().HTTPConfig(),
+		a.Config().HTTP,
 	)
 
 	log.Info(ctx, "http initialized")

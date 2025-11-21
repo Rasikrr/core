@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/Rasikrr/core/api"
-	"github.com/Rasikrr/core/config"
 	"github.com/Rasikrr/core/log"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -30,7 +29,7 @@ type Server struct {
 
 func NewServer(
 	_ context.Context,
-	cfg config.HTTPConfig,
+	cfg Config,
 ) *Server {
 	router := chi.NewRouter()
 

@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rasikrr/core/config"
 	"github.com/Rasikrr/core/log"
 	"github.com/Rasikrr/core/version"
 	redis "github.com/redis/go-redis/v9"
@@ -19,7 +18,7 @@ type cache struct {
 	prefix string
 }
 
-func NewRedisCache(ctx context.Context, cfg config.RedisConfig, prefix string) (Cache, error) {
+func NewRedisCache(ctx context.Context, cfg Config, prefix string) (Cache, error) {
 	addr := hostPort(
 		cfg.Host,
 		cfg.Port,

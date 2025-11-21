@@ -1,4 +1,4 @@
-package config
+package nats
 
 import (
 	"errors"
@@ -8,13 +8,13 @@ var (
 	errNATSConfigRequired = errors.New("nats config error")
 )
 
-type NATSConfig struct {
+type Config struct {
 	Required bool   `yaml:"required"`
 	DSN      string `yaml:"-" env:"NATS_DSN"`
 	Queue    string `yaml:"queue"`
 }
 
-func (c NATSConfig) Validate() error {
+func (c Config) Validate() error {
 	if !c.Required {
 		return nil
 	}

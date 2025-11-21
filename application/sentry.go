@@ -3,16 +3,19 @@ package application
 import (
 	"context"
 
-	"github.com/Rasikrr/core/http"
 	"github.com/Rasikrr/core/log"
 	"github.com/Rasikrr/core/sentry"
 )
 
-// nolint: unparam
 func (a *App) initSentry(ctx context.Context) error {
-	if !a.Config().().Required {
+	if !a.Config().Sentry.Enabled {
+		log.Info(ctx, "sentry disabled")
 		return nil
 	}
-
-	sentry.Init("TODO", a.Config().Environment)
+	err := sentry.Init(a.Config().Sentry, a.Config().Env())
+	if err != nil {
+		return err
+	}
+	log.Info(ctx, "sentry initialized")
+	return nil
 }

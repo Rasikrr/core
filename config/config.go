@@ -6,15 +6,19 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Rasikrr/core/brokers/nats"
+	"github.com/Rasikrr/core/config/appenv"
+	"github.com/Rasikrr/core/database"
 	"github.com/Rasikrr/core/enum"
+	"github.com/Rasikrr/core/grpc"
+	"github.com/Rasikrr/core/http"
 	"github.com/Rasikrr/core/interfaces"
 	"github.com/Rasikrr/core/log"
+	"github.com/Rasikrr/core/metrics"
+	"github.com/Rasikrr/core/redis"
+	"github.com/Rasikrr/core/sentry"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/joho/godotenv"
-)
-
-const (
-	configPathEnv = "CONFIG_PATH"
 )
 
 var (
@@ -24,14 +28,16 @@ var (
 type Config struct {
 	AppName     string           `yaml:"name"`
 	Environment enum.Environment `yaml:"environment" env:"ENVIRONMENT"`
-	Logger      LoggerConfig     `yaml:"log"`
-	HTTP        HTTPConfig       `yaml:"http"`
-	GRPC        GRPCConfig       `yaml:"grpc"`
-	Postgres    PostgresConfig   `yaml:"postgres"`
-	Redis       RedisConfig      `yaml:"redis"`
-	NATS        NATSConfig       `yaml:"nats"`
 	Variables   Variables        `yaml:"env"`
-	Metrics     Metrics          `yaml:"metrics"`
+
+	Logger   log.Config      `yaml:"log"`
+	HTTP     http.Config     `yaml:"http"`
+	GRPC     grpc.Config     `yaml:"grpc"`
+	Postgres database.Config `yaml:"postgres"`
+	Redis    redis.Config    `yaml:"redis"`
+	NATS     nats.Config     `yaml:"nats"`
+	Metrics  metrics.Config  `yaml:"metrics"`
+	Sentry   sentry.Config   `yaml:"sentry"`
 }
 
 func Parse() (Config, error) {
@@ -39,7 +45,7 @@ func Parse() (Config, error) {
 		log.Warnf(context.Background(), "failed to load .env file: %v", err)
 	}
 
-	configFile, ok := os.LookupEnv(configPathEnv)
+	configFile, ok := os.LookupEnv(appenv.ConfigPathEnv)
 	if !ok || configFile == "" {
 		return Config{}, errConfigNotFound
 	}
@@ -58,6 +64,7 @@ func Parse() (Config, error) {
 
 func (c *Config) validate() error {
 	for _, v := range []interfaces.Validatable{
+		c.Sentry,
 		c.HTTP,
 		c.GRPC,
 		c.Postgres,
@@ -79,32 +86,4 @@ func (c *Config) Env() enum.Environment {
 
 func (c *Config) Name() string {
 	return c.AppName
-}
-
-func (c *Config) GRPCConfig() GRPCConfig {
-	return c.GRPC
-}
-
-func (c *Config) HTTPConfig() HTTPConfig {
-	return c.HTTP
-}
-
-func (c *Config) NATSConfig() NATSConfig {
-	return c.NATS
-}
-
-func (c *Config) PostgresConfig() PostgresConfig {
-	return c.Postgres
-}
-
-func (c *Config) RedisConfig() RedisConfig {
-	return c.Redis
-}
-
-func (c *Config) MetricsConfig() Metrics {
-	return c.Metrics
-}
-
-func (c *Config) LoggerConfig() LoggerConfig {
-	return c.Logger
 }
