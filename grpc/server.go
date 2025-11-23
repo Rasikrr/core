@@ -5,13 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"runtime/debug"
 
 	"github.com/Rasikrr/core/log"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 const (
@@ -69,10 +66,12 @@ func newGrpcServer() *grpc.Server {
 
 	unaryInterceptors := []grpc.UnaryServerInterceptor{
 		unaryPanicRecoveryInterceptor,
+		UnaryServerSentryInterceptor,
 		metrics.UnaryServer(),
 	}
 	streamInterceptors := []grpc.StreamServerInterceptor{
 		streamPanicRecoveryInterceptor,
+		StreamServerSentryInterceptor,
 		metrics.StreamServer(),
 	}
 
@@ -87,34 +86,4 @@ func newGrpcServer() *grpc.Server {
 		),
 	)
 	return grpc.NewServer(unary, stream)
-}
-
-func streamPanicRecoveryInterceptor(
-	srv interface{},
-	ss grpc.ServerStream,
-	_ *grpc.StreamServerInfo,
-	handler grpc.StreamHandler,
-) error {
-	ctx := ss.Context()
-	defer func() {
-		if r := recover(); r != nil {
-			log.Debugf(ctx, "Recovered from panic in stream: %v\n%s", r, debug.Stack())
-		}
-	}()
-	return handler(srv, ss)
-}
-
-func unaryPanicRecoveryInterceptor(
-	ctx context.Context,
-	req interface{},
-	_ *grpc.UnaryServerInfo,
-	handler grpc.UnaryHandler,
-) (resp interface{}, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Debugf(ctx, "Recovered from panic in unary: %v\n%s", r, debug.Stack())
-			err = status.Errorf(codes.Internal, "internal server error")
-		}
-	}()
-	return handler(ctx, req)
 }
