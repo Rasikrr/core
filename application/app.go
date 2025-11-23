@@ -180,6 +180,10 @@ func (a *App) gracefulShutdown(ctx context.Context, stopChan chan struct{}) {
 	if err := a.Close(ctx); err != nil {
 		log.Errorf(ctx, "error while closing app: %v", err)
 	}
+
+	// Flush Sentry events before shutdown
+	a.flushSentry(ctx)
+
 	close(stopChan)
 }
 

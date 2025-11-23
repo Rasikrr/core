@@ -27,6 +27,8 @@ func Init(config Config, env enum.Environment) error {
 			Release:          version.GetVersion(),
 			SampleRate:       config.SampleRate,
 			TracesSampleRate: config.TracesSampleRate,
+			AttachStacktrace: true,
+			EnableTracing:    true,
 			Debug:            config.Debug,
 			BeforeSend: func(event *sentrySDK.Event, _ *sentrySDK.EventHint) *sentrySDK.Event {
 				return event
