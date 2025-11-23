@@ -28,6 +28,7 @@ var (
 type Config struct {
 	AppName     string           `yaml:"name"`
 	Environment enum.Environment `yaml:"environment" env:"ENVIRONMENT"`
+	Version     string           `desc:"git tag -> commit hash -> unknown"`
 	Variables   Variables        `yaml:"env"`
 
 	Logger   log.Config      `yaml:"log"`
@@ -54,6 +55,8 @@ func Parse() (Config, error) {
 	if err := cleanenv.ReadConfig(configFile, &config); err != nil {
 		return Config{}, err
 	}
+
+	config.setAppVersion()
 
 	if err := config.validate(); err != nil {
 		return Config{}, err
@@ -86,4 +89,14 @@ func (c *Config) Env() enum.Environment {
 
 func (c *Config) Name() string {
 	return c.AppName
+}
+
+func (c *Config) AppVersion() string {
+	return c.Version
+}
+
+// setAppVersion устанавливает версию приложения из Git
+// Приоритет: Git tag → Git commit hash → "unknown"
+func (c *Config) setAppVersion() {
+	c.Version = buildVersion()
 }

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rasikrr/core/environment"
 	"github.com/Rasikrr/core/log"
-	"github.com/Rasikrr/core/version"
 	redis "github.com/redis/go-redis/v9"
 	"github.com/samber/lo"
 )
@@ -163,5 +163,5 @@ func hostPort(host string, port int) string {
 }
 
 func prefixKey(key string) string {
-	return fmt.Sprintf("%s:%s", strings.ToUpper(key), strings.ToUpper(version.GetVersion().String()))
+	return fmt.Sprintf("%s:%s", strings.ToUpper(key), strings.ToUpper(environment.GetEnv().String()))
 }

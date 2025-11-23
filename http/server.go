@@ -50,8 +50,10 @@ func NewServer(
 
 	initHTTPMetrics()
 	srv.WithMiddlewares(m)
-	srv.registerDefaultMiddlewares()
 
+	srv.setupSentryMiddleware()
+
+	srv.registerDefaultMiddlewares()
 	return srv
 }
 

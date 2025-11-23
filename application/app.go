@@ -9,6 +9,7 @@ import (
 	"github.com/Rasikrr/core/brokers/nats"
 	"github.com/Rasikrr/core/config"
 	"github.com/Rasikrr/core/database"
+	"github.com/Rasikrr/core/environment"
 	coreGrpc "github.com/Rasikrr/core/grpc"
 	"github.com/Rasikrr/core/http"
 	"github.com/Rasikrr/core/interfaces"
@@ -60,7 +61,9 @@ func NewAppWithConfig(ctx context.Context, cfg *config.Config) *App {
 		name:   cfg.Name(),
 		config: cfg,
 	}
-	version.SetVersion(cfg.Env())
+	version.SetVersion(cfg.AppVersion())
+	environment.SetEnv(cfg.Env())
+
 	app.InitLogger()
 	log.Info(context.Background(), "logger initialized")
 
@@ -91,6 +94,12 @@ func NewAppWithConfig(ctx context.Context, cfg *config.Config) *App {
 func (a *App) Start(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	a.cancelFunc = cancel
+	log.Info(ctx,
+		"starting application",
+		log.String("name", a.name),
+		log.String("version", version.GetVersion()),
+		log.String("env", environment.GetEnv().String()),
+	)
 
 	if err := a.initJobManager(ctx); err != nil {
 		return err
@@ -126,7 +135,7 @@ func (a *App) start(ctx context.Context) error {
 		}
 	}()
 
-	errCh := make(chan error, len(a.starters.starters))
+	errCh := make(chan error)
 
 	for _, s := range a.starters.starters {
 		go func() {

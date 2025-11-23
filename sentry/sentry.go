@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Rasikrr/core/enum"
+	"github.com/Rasikrr/core/version"
 	sentrySDK "github.com/getsentry/sentry-go"
 )
 
@@ -23,6 +24,7 @@ func Init(config Config, env enum.Environment) error {
 		initErr = sentrySDK.Init(sentrySDK.ClientOptions{
 			Dsn:              config.DSN,
 			Environment:      env.String(),
+			Release:          version.GetVersion(),
 			SampleRate:       config.SampleRate,
 			TracesSampleRate: config.TracesSampleRate,
 			Debug:            config.Debug,
