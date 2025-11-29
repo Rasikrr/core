@@ -17,4 +17,5 @@ type Cache interface {
 	coreCache.Exister
 	coreCache.Deleter
 	coreCache.Expirer
+	// TODO: Pipeline, PubSub,
 }
