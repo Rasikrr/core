@@ -35,7 +35,6 @@ type Logger interface {
 	Fatalf(ctx context.Context, format string, a ...any)
 
 	Sentry(ctx context.Context, msg string, attrs ...Attr)
-	Sentryf(ctx context.Context, format string, a ...any)
 
 	With(attrs ...Attr) Logger
 }

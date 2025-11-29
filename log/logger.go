@@ -58,10 +58,6 @@ func Sentry(ctx context.Context, msg string, args ...Attr) {
 	Default().Sentry(ctx, msg, args...)
 }
 
-func Sentryf(ctx context.Context, format string, args ...any) {
-	Default().Sentryf(ctx, format, args...)
-}
-
 func With(args ...Attr) Logger {
 	return defaultLogger.With(args...)
 }
