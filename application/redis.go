@@ -3,8 +3,8 @@ package application
 import (
 	"context"
 
+	"github.com/Rasikrr/core/cache/redis"
 	"github.com/Rasikrr/core/log"
-	"github.com/Rasikrr/core/redis"
 )
 
 func (a *App) initRedis(ctx context.Context) error {
@@ -18,7 +18,7 @@ func (a *App) initRedis(ctx context.Context) error {
 		return err
 	}
 
-	log.Info(ctx, "redis initialized")
+	log.Info(ctx, "cache initialized")
 
 	a.closers.Add(a.redis)
 

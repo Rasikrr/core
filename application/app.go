@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	"github.com/Rasikrr/core/brokers/nats"
+	"github.com/Rasikrr/core/cache/redis"
 	"github.com/Rasikrr/core/config"
 	"github.com/Rasikrr/core/database"
 	"github.com/Rasikrr/core/environment"
@@ -14,7 +15,6 @@ import (
 	"github.com/Rasikrr/core/http"
 	"github.com/Rasikrr/core/interfaces"
 	"github.com/Rasikrr/core/log"
-	"github.com/Rasikrr/core/redis"
 	"github.com/Rasikrr/core/version"
 	"github.com/robfig/cron/v3"
 	"go.uber.org/multierr"
@@ -217,7 +217,7 @@ func (a *App) HTTPServer() *http.Server {
 
 func (a *App) Redis() redis.Cache {
 	if a.redis == nil {
-		log.Fatalf(context.Background(), "redis is not initialized or not required. please check your config")
+		log.Fatalf(context.Background(), "cache is not initialized or not required. please check your config")
 	}
 	return a.redis
 }

@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/Rasikrr/core/brokers/nats"
+	"github.com/Rasikrr/core/cache/redis"
 	"github.com/Rasikrr/core/config/appenv"
 	"github.com/Rasikrr/core/database"
 	"github.com/Rasikrr/core/enum"
@@ -15,7 +16,6 @@ import (
 	"github.com/Rasikrr/core/interfaces"
 	"github.com/Rasikrr/core/log"
 	"github.com/Rasikrr/core/metrics"
-	"github.com/Rasikrr/core/redis"
 	"github.com/Rasikrr/core/sentry"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/joho/godotenv"

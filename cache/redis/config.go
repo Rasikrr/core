@@ -1,18 +1,18 @@
 package redis
 
 import (
+	"errors"
 	"fmt"
 	"time"
 )
 
 var (
-	errConfigRequired = fmt.Errorf("redis config error")
+	errConfigRequired = errors.New("cache config error")
 )
 
-// Config содержит настройки для подключения к Redis
 type Config struct {
 	Host        string        `yaml:"-" env:"REDIS_HOST"`
-	Port        int           `yaml:"-" env:"REDIS_PORT"`
+	Port        string        `yaml:"-" env:"REDIS_PORT"`
 	User        string        `yaml:"-" env:"REDIS_USER"`
 	Password    string        `yaml:"-" env:"REDIS_PASSWORD"`
 	DB          int           `yaml:"-" env:"REDIS_DB"`
@@ -21,10 +21,8 @@ type Config struct {
 	MinIdle     int           `yaml:"min_idle_conns"`
 	MaxIdle     int           `yaml:"max_idle_conns"`
 	ReadTimeout time.Duration `yaml:"read_timeout"`
-	PrefixKey   string        `yaml:"prefix_key"`
 }
 
-// Validate проверяет корректность конфигурации
 func (c Config) Validate() error {
 	if !c.Required {
 		return nil
