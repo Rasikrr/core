@@ -9,19 +9,19 @@ import (
 	goredis "github.com/redis/go-redis/v9"
 )
 
-func (r *cache) HSet(ctx context.Context, key string, values ...interface{}) error {
-	key = r.genKey(key)
-	return r.client.HSet(ctx, key, values...).Err()
+func (c *Cache) HSet(ctx context.Context, key string, values ...interface{}) error {
+	key = c.genKey(key)
+	return c.client.HSet(ctx, key, values...).Err()
 }
 
-func (r *cache) HSetNX(ctx context.Context, key, field string, value interface{}) (bool, error) {
-	key = r.genKey(key)
-	return r.client.HSetNX(ctx, key, field, value).Result()
+func (c *Cache) HSetNX(ctx context.Context, key, field string, value interface{}) (bool, error) {
+	key = c.genKey(key)
+	return c.client.HSetNX(ctx, key, field, value).Result()
 }
 
-func (r *cache) HGet(ctx context.Context, key, field string) (any, error) {
-	key = r.genKey(key)
-	result, err := r.client.HGet(ctx, key, field).Result()
+func (c *Cache) HGet(ctx context.Context, key, field string) (any, error) {
+	key = c.genKey(key)
+	result, err := c.client.HGet(ctx, key, field).Result()
 	if err != nil {
 		if errors.Is(err, goredis.Nil) {
 			return nil, coreCache.ErrNotFound
@@ -31,9 +31,9 @@ func (r *cache) HGet(ctx context.Context, key, field string) (any, error) {
 	return result, nil
 }
 
-func (r *cache) HGetBytes(ctx context.Context, key, field string) ([]byte, error) {
-	key = r.genKey(key)
-	result, err := r.client.HGet(ctx, key, field).Bytes()
+func (c *Cache) HGetBytes(ctx context.Context, key, field string) ([]byte, error) {
+	key = c.genKey(key)
+	result, err := c.client.HGet(ctx, key, field).Bytes()
 	if err != nil {
 		if errors.Is(err, goredis.Nil) {
 			return nil, coreCache.ErrNotFound
@@ -43,9 +43,9 @@ func (r *cache) HGetBytes(ctx context.Context, key, field string) ([]byte, error
 	return result, nil
 }
 
-func (r *cache) HGetString(ctx context.Context, key, field string) (string, error) {
-	key = r.genKey(key)
-	result, err := r.client.HGet(ctx, key, field).Result()
+func (c *Cache) HGetString(ctx context.Context, key, field string) (string, error) {
+	key = c.genKey(key)
+	result, err := c.client.HGet(ctx, key, field).Result()
 	if err != nil {
 		if errors.Is(err, goredis.Nil) {
 			return "", coreCache.ErrNotFound
@@ -55,9 +55,9 @@ func (r *cache) HGetString(ctx context.Context, key, field string) (string, erro
 	return result, nil
 }
 
-func (r *cache) HGetBool(ctx context.Context, key, field string) (bool, error) {
-	key = r.genKey(key)
-	result, err := r.client.HGet(ctx, key, field).Bool()
+func (c *Cache) HGetBool(ctx context.Context, key, field string) (bool, error) {
+	key = c.genKey(key)
+	result, err := c.client.HGet(ctx, key, field).Bool()
 	if err != nil {
 		if errors.Is(err, goredis.Nil) {
 			return false, coreCache.ErrNotFound
@@ -67,9 +67,9 @@ func (r *cache) HGetBool(ctx context.Context, key, field string) (bool, error) {
 	return result, nil
 }
 
-func (r *cache) HGetInt(ctx context.Context, key, field string) (int, error) {
-	key = r.genKey(key)
-	result, err := r.client.HGet(ctx, key, field).Int()
+func (c *Cache) HGetInt(ctx context.Context, key, field string) (int, error) {
+	key = c.genKey(key)
+	result, err := c.client.HGet(ctx, key, field).Int()
 	if err != nil {
 		if errors.Is(err, goredis.Nil) {
 			return 0, coreCache.ErrNotFound
@@ -79,9 +79,9 @@ func (r *cache) HGetInt(ctx context.Context, key, field string) (int, error) {
 	return result, nil
 }
 
-func (r *cache) HGetInt64(ctx context.Context, key, field string) (int64, error) {
-	key = r.genKey(key)
-	result, err := r.client.HGet(ctx, key, field).Int64()
+func (c *Cache) HGetInt64(ctx context.Context, key, field string) (int64, error) {
+	key = c.genKey(key)
+	result, err := c.client.HGet(ctx, key, field).Int64()
 	if err != nil {
 		if errors.Is(err, goredis.Nil) {
 			return 0, coreCache.ErrNotFound
@@ -91,9 +91,9 @@ func (r *cache) HGetInt64(ctx context.Context, key, field string) (int64, error)
 	return result, nil
 }
 
-func (r *cache) HGetFloat32(ctx context.Context, key, field string) (float32, error) {
-	key = r.genKey(key)
-	result, err := r.client.HGet(ctx, key, field).Float32()
+func (c *Cache) HGetFloat32(ctx context.Context, key, field string) (float32, error) {
+	key = c.genKey(key)
+	result, err := c.client.HGet(ctx, key, field).Float32()
 	if err != nil {
 		if errors.Is(err, goredis.Nil) {
 			return 0, coreCache.ErrNotFound
@@ -103,9 +103,9 @@ func (r *cache) HGetFloat32(ctx context.Context, key, field string) (float32, er
 	return result, nil
 }
 
-func (r *cache) HGetFloat64(ctx context.Context, key, field string) (float64, error) {
-	key = r.genKey(key)
-	result, err := r.client.HGet(ctx, key, field).Float64()
+func (c *Cache) HGetFloat64(ctx context.Context, key, field string) (float64, error) {
+	key = c.genKey(key)
+	result, err := c.client.HGet(ctx, key, field).Float64()
 	if err != nil {
 		if errors.Is(err, goredis.Nil) {
 			return 0, coreCache.ErrNotFound
@@ -115,9 +115,9 @@ func (r *cache) HGetFloat64(ctx context.Context, key, field string) (float64, er
 	return result, nil
 }
 
-func (r *cache) HGetTime(ctx context.Context, key, field string) (time.Time, error) {
-	key = r.genKey(key)
-	result, err := r.client.HGet(ctx, key, field).Time()
+func (c *Cache) HGetTime(ctx context.Context, key, field string) (time.Time, error) {
+	key = c.genKey(key)
+	result, err := c.client.HGet(ctx, key, field).Time()
 	if err != nil {
 		if errors.Is(err, goredis.Nil) {
 			return time.Time{}, coreCache.ErrNotFound
@@ -127,47 +127,47 @@ func (r *cache) HGetTime(ctx context.Context, key, field string) (time.Time, err
 	return result, nil
 }
 
-func (r *cache) HGetAll(ctx context.Context, key string) (map[string]string, error) {
-	key = r.genKey(key)
-	return r.client.HGetAll(ctx, key).Result()
+func (c *Cache) HGetAll(ctx context.Context, key string) (map[string]string, error) {
+	key = c.genKey(key)
+	return c.client.HGetAll(ctx, key).Result()
 }
 
-func (r *cache) HMGet(ctx context.Context, key string, fields ...string) ([]any, error) {
-	key = r.genKey(key)
-	return r.client.HMGet(ctx, key, fields...).Result()
+func (c *Cache) HMGet(ctx context.Context, key string, fields ...string) ([]any, error) {
+	key = c.genKey(key)
+	return c.client.HMGet(ctx, key, fields...).Result()
 }
 
-func (r *cache) HDel(ctx context.Context, key string, fields ...string) (int64, error) {
-	key = r.genKey(key)
-	return r.client.HDel(ctx, key, fields...).Result()
+func (c *Cache) HDel(ctx context.Context, key string, fields ...string) (int64, error) {
+	key = c.genKey(key)
+	return c.client.HDel(ctx, key, fields...).Result()
 }
 
-func (r *cache) HExists(ctx context.Context, key, field string) (bool, error) {
-	key = r.genKey(key)
-	return r.client.HExists(ctx, key, field).Result()
+func (c *Cache) HExists(ctx context.Context, key, field string) (bool, error) {
+	key = c.genKey(key)
+	return c.client.HExists(ctx, key, field).Result()
 }
 
-func (r *cache) HLen(ctx context.Context, key string) (int64, error) {
-	key = r.genKey(key)
-	return r.client.HLen(ctx, key).Result()
+func (c *Cache) HLen(ctx context.Context, key string) (int64, error) {
+	key = c.genKey(key)
+	return c.client.HLen(ctx, key).Result()
 }
 
-func (r *cache) HKeys(ctx context.Context, key string) ([]string, error) {
-	key = r.genKey(key)
-	return r.client.HKeys(ctx, key).Result()
+func (c *Cache) HKeys(ctx context.Context, key string) ([]string, error) {
+	key = c.genKey(key)
+	return c.client.HKeys(ctx, key).Result()
 }
 
-func (r *cache) HVals(ctx context.Context, key string) ([]string, error) {
-	key = r.genKey(key)
-	return r.client.HVals(ctx, key).Result()
+func (c *Cache) HVals(ctx context.Context, key string) ([]string, error) {
+	key = c.genKey(key)
+	return c.client.HVals(ctx, key).Result()
 }
 
-func (r *cache) HIncrBy(ctx context.Context, key, field string, incr int64) (int64, error) {
-	key = r.genKey(key)
-	return r.client.HIncrBy(ctx, key, field, incr).Result()
+func (c *Cache) HIncrBy(ctx context.Context, key, field string, incr int64) (int64, error) {
+	key = c.genKey(key)
+	return c.client.HIncrBy(ctx, key, field, incr).Result()
 }
 
-func (r *cache) HIncrByFloat(ctx context.Context, key, field string, incr float64) (float64, error) {
-	key = r.genKey(key)
-	return r.client.HIncrByFloat(ctx, key, field, incr).Result()
+func (c *Cache) HIncrByFloat(ctx context.Context, key, field string, incr float64) (float64, error) {
+	key = c.genKey(key)
+	return c.client.HIncrByFloat(ctx, key, field, incr).Result()
 }

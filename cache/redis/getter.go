@@ -10,9 +10,9 @@ import (
 	"github.com/samber/lo"
 )
 
-func (r *cache) Get(ctx context.Context, key string) (any, error) {
-	k := r.genKey(key)
-	val, err := r.client.Get(ctx, k).Result()
+func (c *Cache) Get(ctx context.Context, key string) (any, error) {
+	k := c.genKey(key)
+	val, err := c.client.Get(ctx, k).Result()
 	if err != nil {
 		if errors.Is(err, goredis.Nil) {
 			return nil, coreCache.ErrNotFound
@@ -22,9 +22,9 @@ func (r *cache) Get(ctx context.Context, key string) (any, error) {
 	return val, nil
 }
 
-func (r *cache) GetString(ctx context.Context, key string) (string, error) {
-	k := r.genKey(key)
-	val, err := r.client.Get(ctx, k).Result()
+func (c *Cache) GetString(ctx context.Context, key string) (string, error) {
+	k := c.genKey(key)
+	val, err := c.client.Get(ctx, k).Result()
 	if err != nil {
 		if errors.Is(err, goredis.Nil) {
 			return "", coreCache.ErrNotFound
@@ -34,9 +34,9 @@ func (r *cache) GetString(ctx context.Context, key string) (string, error) {
 	return val, nil
 }
 
-func (r *cache) GetBytes(ctx context.Context, key string) ([]byte, error) {
-	k := r.genKey(key)
-	val, err := r.client.Get(ctx, k).Bytes()
+func (c *Cache) GetBytes(ctx context.Context, key string) ([]byte, error) {
+	k := c.genKey(key)
+	val, err := c.client.Get(ctx, k).Bytes()
 	if err != nil {
 		if errors.Is(err, goredis.Nil) {
 			return nil, coreCache.ErrNotFound
@@ -46,9 +46,9 @@ func (r *cache) GetBytes(ctx context.Context, key string) ([]byte, error) {
 	return val, nil
 }
 
-func (r *cache) GetBool(ctx context.Context, key string) (bool, error) {
-	k := r.genKey(key)
-	val, err := r.client.Get(ctx, k).Bool()
+func (c *Cache) GetBool(ctx context.Context, key string) (bool, error) {
+	k := c.genKey(key)
+	val, err := c.client.Get(ctx, k).Bool()
 	if err != nil {
 		if errors.Is(err, goredis.Nil) {
 			return false, coreCache.ErrNotFound
@@ -58,9 +58,9 @@ func (r *cache) GetBool(ctx context.Context, key string) (bool, error) {
 	return val, nil
 }
 
-func (r *cache) GetInt(ctx context.Context, key string) (int, error) {
-	k := r.genKey(key)
-	val, err := r.client.Get(ctx, k).Int()
+func (c *Cache) GetInt(ctx context.Context, key string) (int, error) {
+	k := c.genKey(key)
+	val, err := c.client.Get(ctx, k).Int()
 	if err != nil {
 		if errors.Is(err, goredis.Nil) {
 			return 0, coreCache.ErrNotFound
@@ -70,9 +70,9 @@ func (r *cache) GetInt(ctx context.Context, key string) (int, error) {
 	return val, nil
 }
 
-func (r *cache) GetInt64(ctx context.Context, key string) (int64, error) {
-	k := r.genKey(key)
-	val, err := r.client.Get(ctx, k).Int64()
+func (c *Cache) GetInt64(ctx context.Context, key string) (int64, error) {
+	k := c.genKey(key)
+	val, err := c.client.Get(ctx, k).Int64()
 	if err != nil {
 		if errors.Is(err, goredis.Nil) {
 			return 0, coreCache.ErrNotFound
@@ -82,9 +82,9 @@ func (r *cache) GetInt64(ctx context.Context, key string) (int64, error) {
 	return val, nil
 }
 
-func (r *cache) GetFloat32(ctx context.Context, key string) (float32, error) {
-	k := r.genKey(key)
-	val, err := r.client.Get(ctx, k).Float32()
+func (c *Cache) GetFloat32(ctx context.Context, key string) (float32, error) {
+	k := c.genKey(key)
+	val, err := c.client.Get(ctx, k).Float32()
 	if err != nil {
 		if errors.Is(err, goredis.Nil) {
 			return 0, coreCache.ErrNotFound
@@ -92,9 +92,9 @@ func (r *cache) GetFloat32(ctx context.Context, key string) (float32, error) {
 	}
 	return val, err
 }
-func (r *cache) GetFloat64(ctx context.Context, key string) (float64, error) {
-	k := r.genKey(key)
-	val, err := r.client.Get(ctx, k).Float64()
+func (c *Cache) GetFloat64(ctx context.Context, key string) (float64, error) {
+	k := c.genKey(key)
+	val, err := c.client.Get(ctx, k).Float64()
 	if err != nil {
 		if errors.Is(err, goredis.Nil) {
 			return 0, coreCache.ErrNotFound
@@ -103,9 +103,9 @@ func (r *cache) GetFloat64(ctx context.Context, key string) (float64, error) {
 	return val, err
 }
 
-func (r *cache) GetTime(ctx context.Context, key string) (time.Time, error) {
-	k := r.genKey(key)
-	val, err := r.client.Get(ctx, k).Time()
+func (c *Cache) GetTime(ctx context.Context, key string) (time.Time, error) {
+	k := c.genKey(key)
+	val, err := c.client.Get(ctx, k).Time()
 	if err != nil {
 		if errors.Is(err, goredis.Nil) {
 			return time.Time{}, coreCache.ErrNotFound
@@ -114,11 +114,11 @@ func (r *cache) GetTime(ctx context.Context, key string) (time.Time, error) {
 	return val, err
 }
 
-func (r *cache) MGet(ctx context.Context, keys ...string) ([]any, error) {
+func (c *Cache) MGet(ctx context.Context, keys ...string) ([]any, error) {
 	keys = lo.Map(keys, func(k string, _ int) string {
-		return r.genKey(k)
+		return c.genKey(k)
 	})
-	values, err := r.client.MGet(ctx, keys...).Result()
+	values, err := c.client.MGet(ctx, keys...).Result()
 	if err != nil {
 		return nil, err
 	}

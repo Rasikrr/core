@@ -24,7 +24,7 @@ import (
 type App struct {
 	name   string
 	config *config.Config
-	redis  redis.Cache
+	redis  *redis.Cache
 
 	postgres          *database.Postgres
 	postgresTXManager database.TXManager
@@ -215,7 +215,7 @@ func (a *App) HTTPServer() *http.Server {
 	return a.httpServer
 }
 
-func (a *App) Redis() redis.Cache {
+func (a *App) Redis() *redis.Cache {
 	if a.redis == nil {
 		log.Fatalf(context.Background(), "cache is not initialized or not required. please check your config")
 	}

@@ -3,18 +3,20 @@ package redis
 import (
 	"context"
 	"fmt"
-	coreCache "github.com/Rasikrr/core/cache"
 	"net"
+
+	"github.com/Rasikrr/core/log"
 
 	"github.com/redis/go-redis/v9"
 )
 
-type cache struct {
+type Cache struct {
+	logger log.Logger
 	client *redis.Client
 	prefix string
 }
 
-func NewRedisCache(ctx context.Context, cfg Config, prefix string) (Cache, error) {
+func NewRedisCache(ctx context.Context, cfg Config, prefix string) (*Cache, error) {
 	addr := net.JoinHostPort(
 		cfg.Host,
 		cfg.Port,
@@ -37,12 +39,13 @@ func NewRedisCache(ctx context.Context, cfg Config, prefix string) (Cache, error
 		return nil, err
 	}
 
-	return &cache{
+	return &Cache{
+		logger: log.With(log.String("system", "redis")),
 		client: client,
-		prefix: coreCache.PrefixKey(prefix),
+		prefix: prefix,
 	}, nil
 }
 
-func (r *cache) genKey(k string) string {
-	return fmt.Sprintf("%s:%s", r.prefix, k)
+func (c *Cache) genKey(k string) string {
+	return fmt.Sprintf("%s:%s", c.prefix, k)
 }

@@ -2,9 +2,9 @@ package redis
 
 import "context"
 
-func (r *cache) Exists(ctx context.Context, key string) (bool, error) {
-	k := r.genKey(key)
-	exists, err := r.client.Exists(ctx, k).Result()
+func (c *Cache) Exists(ctx context.Context, key string) (bool, error) {
+	k := c.genKey(key)
+	exists, err := c.client.Exists(ctx, k).Result()
 	if err != nil {
 		return false, err
 	}
