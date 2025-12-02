@@ -6,7 +6,6 @@ import (
 	"time"
 
 	coreCache "github.com/Rasikrr/core/cache"
-	goredis "github.com/redis/go-redis/v9"
 )
 
 // Set sets the value of a key
@@ -39,7 +38,7 @@ func (c *Cache) GetSet(ctx context.Context, key string, value any) (string, erro
 	k := c.genKey(key)
 	result, err := c.client.GetSet(ctx, k, value).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -52,7 +51,7 @@ func (c *Cache) GetDel(ctx context.Context, key string) (string, error) {
 	k := c.genKey(key)
 	result, err := c.client.GetDel(ctx, k).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -65,7 +64,7 @@ func (c *Cache) GetEx(ctx context.Context, key string, expiration time.Duration)
 	k := c.genKey(key)
 	result, err := c.client.GetEx(ctx, k, expiration).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err

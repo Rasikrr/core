@@ -83,7 +83,7 @@ func (p *Pipeliner) Get(ctx context.Context, key string) (any, error) {
 	k := p.genKey(key)
 	val, err := p.pipe.Get(ctx, k).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return nil, coreCache.ErrNotFound
 		}
 		return nil, err
@@ -95,7 +95,7 @@ func (p *Pipeliner) GetString(ctx context.Context, key string) (string, error) {
 	k := p.genKey(key)
 	val, err := p.pipe.Get(ctx, k).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -107,7 +107,7 @@ func (p *Pipeliner) GetBytes(ctx context.Context, key string) ([]byte, error) {
 	k := p.genKey(key)
 	val, err := p.pipe.Get(ctx, k).Bytes()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return nil, coreCache.ErrNotFound
 		}
 		return nil, err
@@ -119,7 +119,7 @@ func (p *Pipeliner) GetBool(ctx context.Context, key string) (bool, error) {
 	k := p.genKey(key)
 	val, err := p.pipe.Get(ctx, k).Bool()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return false, coreCache.ErrNotFound
 		}
 		return false, err
@@ -131,7 +131,7 @@ func (p *Pipeliner) GetInt(ctx context.Context, key string) (int, error) {
 	k := p.genKey(key)
 	val, err := p.pipe.Get(ctx, k).Int()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return 0, coreCache.ErrNotFound
 		}
 		return 0, err
@@ -143,7 +143,7 @@ func (p *Pipeliner) GetInt64(ctx context.Context, key string) (int64, error) {
 	k := p.genKey(key)
 	val, err := p.pipe.Get(ctx, k).Int64()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return 0, coreCache.ErrNotFound
 		}
 		return 0, err
@@ -155,7 +155,7 @@ func (p *Pipeliner) GetFloat32(ctx context.Context, key string) (float32, error)
 	k := p.genKey(key)
 	val, err := p.pipe.Get(ctx, k).Float32()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return 0, coreCache.ErrNotFound
 		}
 	}
@@ -165,7 +165,7 @@ func (p *Pipeliner) GetFloat64(ctx context.Context, key string) (float64, error)
 	k := p.genKey(key)
 	val, err := p.pipe.Get(ctx, k).Float64()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return 0, coreCache.ErrNotFound
 		}
 	}
@@ -176,7 +176,7 @@ func (p *Pipeliner) GetTime(ctx context.Context, key string) (time.Time, error) 
 	k := p.genKey(key)
 	val, err := p.pipe.Get(ctx, k).Time()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return time.Time{}, coreCache.ErrNotFound
 		}
 	}
@@ -266,7 +266,7 @@ func (p *Pipeliner) HGet(ctx context.Context, key, field string) (any, error) {
 	key = p.genKey(key)
 	result, err := p.pipe.HGet(ctx, key, field).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return nil, coreCache.ErrNotFound
 		}
 		return nil, err
@@ -278,7 +278,7 @@ func (p *Pipeliner) HGetBytes(ctx context.Context, key, field string) ([]byte, e
 	key = p.genKey(key)
 	result, err := p.pipe.HGet(ctx, key, field).Bytes()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return nil, coreCache.ErrNotFound
 		}
 		return nil, err
@@ -290,7 +290,7 @@ func (p *Pipeliner) HGetString(ctx context.Context, key, field string) (string, 
 	key = p.genKey(key)
 	result, err := p.pipe.HGet(ctx, key, field).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -302,7 +302,7 @@ func (p *Pipeliner) HGetBool(ctx context.Context, key, field string) (bool, erro
 	key = p.genKey(key)
 	result, err := p.pipe.HGet(ctx, key, field).Bool()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return false, coreCache.ErrNotFound
 		}
 		return false, err
@@ -314,7 +314,7 @@ func (p *Pipeliner) HGetInt(ctx context.Context, key, field string) (int, error)
 	key = p.genKey(key)
 	result, err := p.pipe.HGet(ctx, key, field).Int()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return 0, coreCache.ErrNotFound
 		}
 		return 0, err
@@ -326,7 +326,7 @@ func (p *Pipeliner) HGetInt64(ctx context.Context, key, field string) (int64, er
 	key = p.genKey(key)
 	result, err := p.pipe.HGet(ctx, key, field).Int64()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return 0, coreCache.ErrNotFound
 		}
 		return 0, err
@@ -338,7 +338,7 @@ func (p *Pipeliner) HGetFloat32(ctx context.Context, key, field string) (float32
 	key = p.genKey(key)
 	result, err := p.pipe.HGet(ctx, key, field).Float32()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return 0, coreCache.ErrNotFound
 		}
 		return 0, err
@@ -350,7 +350,7 @@ func (p *Pipeliner) HGetFloat64(ctx context.Context, key, field string) (float64
 	key = p.genKey(key)
 	result, err := p.pipe.HGet(ctx, key, field).Float64()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return 0, coreCache.ErrNotFound
 		}
 		return 0, err
@@ -362,7 +362,7 @@ func (p *Pipeliner) HGetTime(ctx context.Context, key, field string) (time.Time,
 	key = p.genKey(key)
 	result, err := p.pipe.HGet(ctx, key, field).Time()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return time.Time{}, coreCache.ErrNotFound
 		}
 		return time.Time{}, err
@@ -443,7 +443,7 @@ func (p *Pipeliner) LPop(ctx context.Context, key string) (string, error) {
 	k := p.genKey(key)
 	result, err := p.pipe.LPop(ctx, k).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -455,7 +455,7 @@ func (p *Pipeliner) RPop(ctx context.Context, key string) (string, error) {
 	k := p.genKey(key)
 	result, err := p.pipe.RPop(ctx, k).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -467,7 +467,7 @@ func (p *Pipeliner) LIndex(ctx context.Context, key string, index int64) (string
 	k := p.genKey(key)
 	result, err := p.pipe.LIndex(ctx, k, index).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -499,7 +499,7 @@ func (p *Pipeliner) LPos(ctx context.Context, key string, value string) (int64, 
 	k := p.genKey(key)
 	result, err := p.pipe.LPos(ctx, k, value, goredis.LPosArgs{}).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return 0, coreCache.ErrNotFound
 		}
 		return 0, err
@@ -513,7 +513,7 @@ func (p *Pipeliner) BLPop(ctx context.Context, timeout time.Duration, keys ...st
 	}
 	result, err := p.pipe.BLPop(ctx, timeout, keys...).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return nil, coreCache.ErrNotFound
 		}
 		return nil, err
@@ -527,7 +527,7 @@ func (p *Pipeliner) BRPop(ctx context.Context, timeout time.Duration, keys ...st
 	}
 	result, err := p.pipe.BRPop(ctx, timeout, keys...).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return nil, coreCache.ErrNotFound
 		}
 		return nil, err
@@ -540,7 +540,7 @@ func (p *Pipeliner) RPopLPush(ctx context.Context, source, destination string) (
 	destination = p.genKey(destination)
 	result, err := p.pipe.RPopLPush(ctx, source, destination).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -553,7 +553,7 @@ func (p *Pipeliner) BRPopLPush(ctx context.Context, source, destination string, 
 	destination = p.genKey(destination)
 	result, err := p.pipe.BRPopLPush(ctx, source, destination, timeout).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -566,7 +566,7 @@ func (p *Pipeliner) LMove(ctx context.Context, source, destination, srcpos, dest
 	destination = p.genKey(destination)
 	result, err := p.pipe.LMove(ctx, source, destination, srcpos, destpos).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -579,7 +579,7 @@ func (p *Pipeliner) BLMove(ctx context.Context, source, destination, srcpos, des
 	destination = p.genKey(destination)
 	result, err := p.pipe.BLMove(ctx, source, destination, srcpos, destpos, timeout).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -733,7 +733,7 @@ func (p *Pipeliner) SPop(ctx context.Context, key string) (string, error) {
 	key = p.genKey(key)
 	result, err := p.pipe.SPop(ctx, key).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -750,7 +750,7 @@ func (p *Pipeliner) SRandMember(ctx context.Context, key string) (string, error)
 	key = p.genKey(key)
 	result, err := p.pipe.SRandMember(ctx, key).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -842,7 +842,7 @@ func (p *Pipeliner) GetSet(ctx context.Context, key string, value any) (string, 
 	k := p.genKey(key)
 	result, err := p.pipe.GetSet(ctx, k, value).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -855,7 +855,7 @@ func (p *Pipeliner) GetDel(ctx context.Context, key string) (string, error) {
 	k := p.genKey(key)
 	result, err := p.pipe.GetDel(ctx, k).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -868,7 +868,7 @@ func (p *Pipeliner) GetEx(ctx context.Context, key string, expiration time.Durat
 	k := p.genKey(key)
 	result, err := p.pipe.GetEx(ctx, k, expiration).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -942,7 +942,7 @@ func (p *Pipeliner) ZScore(ctx context.Context, key, member string) (float64, er
 	key = p.genKey(key)
 	score, err := p.pipe.ZScore(ctx, key, member).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return 0, coreCache.ErrNotFound
 		}
 		return 0, err
@@ -1040,7 +1040,7 @@ func (p *Pipeliner) ZRank(ctx context.Context, key, member string) (int64, error
 	key = p.genKey(key)
 	rank, err := p.pipe.ZRank(ctx, key, member).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return 0, coreCache.ErrNotFound
 		}
 		return 0, err
@@ -1053,7 +1053,7 @@ func (p *Pipeliner) ZRevRank(ctx context.Context, key, member string) (int64, er
 	key = p.genKey(key)
 	rank, err := p.pipe.ZRevRank(ctx, key, member).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return 0, coreCache.ErrNotFound
 		}
 		return 0, err

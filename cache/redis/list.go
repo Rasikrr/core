@@ -33,7 +33,7 @@ func (c *Cache) LPop(ctx context.Context, key string) (string, error) {
 	k := c.genKey(key)
 	result, err := c.client.LPop(ctx, k).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -45,7 +45,7 @@ func (c *Cache) RPop(ctx context.Context, key string) (string, error) {
 	k := c.genKey(key)
 	result, err := c.client.RPop(ctx, k).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -57,7 +57,7 @@ func (c *Cache) LIndex(ctx context.Context, key string, index int64) (string, er
 	k := c.genKey(key)
 	result, err := c.client.LIndex(ctx, k, index).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -89,7 +89,7 @@ func (c *Cache) LPos(ctx context.Context, key string, value string) (int64, erro
 	k := c.genKey(key)
 	result, err := c.client.LPos(ctx, k, value, goredis.LPosArgs{}).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return 0, coreCache.ErrNotFound
 		}
 		return 0, err
@@ -103,7 +103,7 @@ func (c *Cache) BLPop(ctx context.Context, timeout time.Duration, keys ...string
 	}
 	result, err := c.client.BLPop(ctx, timeout, keys...).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return nil, coreCache.ErrNotFound
 		}
 		return nil, err
@@ -117,7 +117,7 @@ func (c *Cache) BRPop(ctx context.Context, timeout time.Duration, keys ...string
 	}
 	result, err := c.client.BRPop(ctx, timeout, keys...).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return nil, coreCache.ErrNotFound
 		}
 		return nil, err
@@ -130,7 +130,7 @@ func (c *Cache) RPopLPush(ctx context.Context, source, destination string) (stri
 	destination = c.genKey(destination)
 	result, err := c.client.RPopLPush(ctx, source, destination).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -143,7 +143,7 @@ func (c *Cache) BRPopLPush(ctx context.Context, source, destination string, time
 	destination = c.genKey(destination)
 	result, err := c.client.BRPopLPush(ctx, source, destination, timeout).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -156,7 +156,7 @@ func (c *Cache) LMove(ctx context.Context, source, destination, srcpos, destpos 
 	destination = c.genKey(destination)
 	result, err := c.client.LMove(ctx, source, destination, srcpos, destpos).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -169,7 +169,7 @@ func (c *Cache) BLMove(ctx context.Context, source, destination, srcpos, destpos
 	destination = c.genKey(destination)
 	result, err := c.client.BLMove(ctx, source, destination, srcpos, destpos, timeout).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err

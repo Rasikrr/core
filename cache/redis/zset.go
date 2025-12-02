@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	coreCache "github.com/Rasikrr/core/cache"
-	goredis "github.com/redis/go-redis/v9"
 )
 
 // ZAdd adds members with scores to a sorted set
@@ -49,7 +48,7 @@ func (c *Cache) ZScore(ctx context.Context, key, member string) (float64, error)
 	key = c.genKey(key)
 	score, err := c.client.ZScore(ctx, key, member).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return 0, coreCache.ErrNotFound
 		}
 		return 0, err
@@ -147,7 +146,7 @@ func (c *Cache) ZRank(ctx context.Context, key, member string) (int64, error) {
 	key = c.genKey(key)
 	rank, err := c.client.ZRank(ctx, key, member).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return 0, coreCache.ErrNotFound
 		}
 		return 0, err
@@ -160,7 +159,7 @@ func (c *Cache) ZRevRank(ctx context.Context, key, member string) (int64, error)
 	key = c.genKey(key)
 	rank, err := c.client.ZRevRank(ctx, key, member).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return 0, coreCache.ErrNotFound
 		}
 		return 0, err

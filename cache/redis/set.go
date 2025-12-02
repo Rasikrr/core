@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	coreCache "github.com/Rasikrr/core/cache"
-	goredis "github.com/redis/go-redis/v9"
 )
 
 func (c *Cache) SAdd(ctx context.Context, key string, members ...interface{}) error {
@@ -43,7 +42,7 @@ func (c *Cache) SPop(ctx context.Context, key string) (string, error) {
 	key = c.genKey(key)
 	result, err := c.client.SPop(ctx, key).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
@@ -60,7 +59,7 @@ func (c *Cache) SRandMember(ctx context.Context, key string) (string, error) {
 	key = c.genKey(key)
 	result, err := c.client.SRandMember(ctx, key).Result()
 	if err != nil {
-		if errors.Is(err, goredis.Nil) {
+		if errors.Is(err, Nil) {
 			return "", coreCache.ErrNotFound
 		}
 		return "", err
