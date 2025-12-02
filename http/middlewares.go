@@ -3,8 +3,6 @@ package http
 import (
 	"net/http"
 
-	"github.com/Rasikrr/core/api"
-	coreError "github.com/Rasikrr/core/errors"
 	"github.com/Rasikrr/core/log"
 	"github.com/go-chi/cors"
 )
@@ -46,7 +44,7 @@ func (m *RecoverMiddleware) Handle(next http.Handler) http.Handler {
 			if err := recover(); err != nil {
 				log.Errorf(ctx, "panic while handling request: %v", err)
 				if !wrappedWriter.written {
-					api.SendError(w, coreError.ErrInternalServerError)
+					SendError(w, NewError("Internal Server Error", http.StatusInternalServerError))
 				} else {
 					log.Warnf(ctx, "cannot set status 500: response already written with status %d", wrappedWriter.statusCode)
 				}

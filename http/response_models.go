@@ -1,14 +1,14 @@
-package api
+package http
 
-//go:generate easyjson -all models.go
+//go:generate easyjson -all response_models.go
 
 type EmptySuccessResponse struct {
 	Message string `json:"message"`
 }
 
 type ErrorResponse struct {
-	Message string `json:"message"`
 	Code    int    `json:"code"`
+	Message string `json:"message"`
 }
 
 type SuccessResponse struct {
