@@ -7,15 +7,11 @@ import (
 	"os"
 	"runtime"
 	"time"
-
-	"github.com/Rasikrr/core/sentry"
 )
 
 const (
-	FatalString             = "FATAL"
-	SentryString            = "SENTRY"
-	LevelFatal   slog.Level = 12
-	LevelSentry  slog.Level = 11
+	FatalString            = "FATAL"
+	LevelFatal  slog.Level = 12
 )
 
 type Logger interface {
@@ -33,8 +29,6 @@ type Logger interface {
 
 	Fatal(ctx context.Context, msg string, attrs ...Attr)
 	Fatalf(ctx context.Context, format string, a ...any)
-
-	Sentry(ctx context.Context, msg string, attrs ...Attr)
 
 	With(attrs ...Attr) Logger
 }
@@ -108,26 +102,6 @@ func (l *slogWrapper) Fatal(ctx context.Context, msg string, attrs ...Attr) {
 func (l *slogWrapper) Fatalf(ctx context.Context, format string, a ...any) {
 	l.log(ctx, LevelFatal, fmt.Sprintf(format, a...), nil)
 	os.Exit(1)
-}
-
-func (l *slogWrapper) Sentry(ctx context.Context, msg string, attrs ...Attr) {
-	l.log(ctx, LevelSentry, msg, attrs)
-	sentry.CaptureEvent(ctx, LevelSentry, msg, attrsToMap(attrs))
-}
-
-func (l *slogWrapper) Sentryf(ctx context.Context, format string, a ...any) {
-	msg := fmt.Sprintf(format, a...)
-	l.log(ctx, LevelSentry, msg, nil)
-	sentry.CaptureEvent(ctx, LevelSentry, msg, nil)
-}
-
-// attrsToMap конвертирует []Attr в map[string]any для Sentry
-func attrsToMap(attrs []Attr) map[string]any {
-	m := make(map[string]any, len(attrs))
-	for _, attr := range attrs {
-		m[attr.Key] = attr.Value.Any()
-	}
-	return m
 }
 
 func (l *slogWrapper) With(attrs ...Attr) Logger {

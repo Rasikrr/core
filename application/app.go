@@ -64,12 +64,15 @@ func NewAppWithConfig(ctx context.Context, cfg *config.Config) *App {
 	version.SetVersion(cfg.AppVersion())
 	environment.SetEnv(cfg.Env())
 
-	app.InitLogger()
-	log.Info(context.Background(), "logger initialized")
-
 	if err := app.initSentry(ctx); err != nil {
 		log.Fatalf(ctx, "failed to initialize sentry: %v", err)
 	}
+
+	if err := app.InitLogger(); err != nil {
+		log.Fatalf(ctx, "failed to initialize logger: %v", err)
+	}
+	log.Info(ctx, "logger initialized")
+
 	if err := app.initMetrics(ctx); err != nil {
 		log.Fatalf(ctx, "failed to init metrics: %v", err)
 	}

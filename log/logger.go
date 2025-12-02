@@ -7,6 +7,10 @@ import (
 	"sync"
 
 	"github.com/Rasikrr/core/enum"
+	"github.com/Rasikrr/core/sentry"
+	"github.com/cockroachdb/errors"
+	sentryslog "github.com/getsentry/sentry-go/slog"
+	slogmulti "github.com/samber/slog-multi"
 )
 
 var (
@@ -54,10 +58,6 @@ func Fatalf(ctx context.Context, format string, args ...any) {
 	Default().Fatalf(ctx, format, args...)
 }
 
-func Sentry(ctx context.Context, msg string, args ...Attr) {
-	Default().Sentry(ctx, msg, args...)
-}
-
 func With(args ...Attr) Logger {
 	return defaultLogger.With(args...)
 }
@@ -66,35 +66,52 @@ func Default() Logger {
 	return defaultLogger
 }
 
-func Init(env enum.Environment, level enum.LogLevel, addSource bool) {
+func Init(env enum.Environment, level enum.LogLevel, addSource bool) error {
 	lvl := level.ToSlogLevel()
 	opts := &slog.HandlerOptions{
 		Level:       lvl,
 		AddSource:   addSource,
 		ReplaceAttr: replaceLevelAttr,
 	}
+	var onceErr error
 	once.Do(func() {
-		var handler slog.Handler
+		handlers := make([]slog.Handler, 0, 2)
+		if sentry.Enabled() {
+			sentryHandler, err := getSentryHandler()
+			if err != nil {
+				onceErr = errors.Wrap(err, "logger init failed")
+				return
+			}
+			handlers = append(handlers, sentryHandler)
+		}
+
 		switch env {
 		case enum.EnvironmentProd:
-			handler = slog.NewJSONHandler(os.Stdout, opts)
+			handlers = append(handlers, slog.NewJSONHandler(os.Stdout, opts))
 		default:
-			handler = slog.NewTextHandler(os.Stdout, opts)
+			handlers = append(handlers, slog.NewTextHandler(os.Stdout, opts))
 		}
+		handler := slogmulti.Fanout(handlers...)
+
 		defaultLogger = &slogWrapper{base: slog.New(handler)}
 	})
+	return onceErr
 }
 
 // nolint: gocritic
 func replaceLevelAttr(_ []string, a slog.Attr) slog.Attr {
 	if a.Key == slog.LevelKey {
 		level := a.Value.Any().(slog.Level)
-		switch level {
-		case LevelFatal:
+		if level == LevelFatal {
 			return slog.String(slog.LevelKey, FatalString)
-		case LevelSentry:
-			return slog.String(slog.LevelKey, SentryString)
 		}
 	}
 	return a
+}
+
+func getSentryHandler() (slog.Handler, error) {
+	return sentryslog.Option{
+		EventLevel: []slog.Level{slog.LevelError},
+		LogLevel:   []slog.Level{slog.LevelWarn, slog.LevelInfo},
+	}.NewSentryHandler(context.Background()), nil
 }

@@ -8,6 +8,7 @@ type Config struct {
 	Enabled          bool    `yaml:"enabled"`
 	DSN              string  `env:"SENTRY_DSN"`
 	SampleRate       float64 `yaml:"sample_rate"`
+	Tracing          bool    `yaml:"tracing"`
 	TracesSampleRate float64 `yaml:"traces_sample_rate"`
 	Debug            bool    `yaml:"debug"`
 }
