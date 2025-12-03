@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/Rasikrr/core/sentry"
 	sentrySDK "github.com/getsentry/sentry-go"
 	sentryslog "github.com/getsentry/sentry-go/slog"
 )
@@ -36,6 +37,13 @@ func (h *breadcrumbHandler) Handle(ctx context.Context, record slog.Record) erro
 	// Only add breadcrumbs if we have a Hub in context (i.e., within an HTTP request)
 	// This prevents breadcrumbs from startup logs polluting request-specific breadcrumbs
 	hub := sentrySDK.GetHubFromContext(ctx)
+	if hub == nil {
+		var err error
+		hub, err = sentry.CurrentHub()
+		if err != nil {
+			return nil
+		}
+	}
 	if hub != nil {
 		// Collect attributes
 		data := make(map[string]interface{})
