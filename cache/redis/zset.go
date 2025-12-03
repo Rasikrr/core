@@ -1,10 +1,8 @@
+// nolint: revive
 package redis
 
 import (
 	"context"
-	"errors"
-
-	coreCache "github.com/Rasikrr/core/cache"
 )
 
 // ZAdd adds members with scores to a sorted set
@@ -46,14 +44,7 @@ func (c *Cache) ZRem(ctx context.Context, key string, members ...any) (int64, er
 // ZScore returns the score of a member
 func (c *Cache) ZScore(ctx context.Context, key, member string) (float64, error) {
 	key = c.genKey(key)
-	score, err := c.client.ZScore(ctx, key, member).Result()
-	if err != nil {
-		if errors.Is(err, Nil) {
-			return 0, coreCache.ErrNotFound
-		}
-		return 0, err
-	}
-	return score, nil
+	return c.client.ZScore(ctx, key, member).Result()
 }
 
 // ZCard returns the number of members in a sorted set
@@ -144,27 +135,13 @@ func (c *Cache) ZRevRangeByScoreWithScores(ctx context.Context, key string, opt 
 // ZRank returns the rank (index) of a member (ascending order, 0-based)
 func (c *Cache) ZRank(ctx context.Context, key, member string) (int64, error) {
 	key = c.genKey(key)
-	rank, err := c.client.ZRank(ctx, key, member).Result()
-	if err != nil {
-		if errors.Is(err, Nil) {
-			return 0, coreCache.ErrNotFound
-		}
-		return 0, err
-	}
-	return rank, nil
+	return c.client.ZRank(ctx, key, member).Result()
 }
 
 // ZRevRank returns the rank of a member (descending order, 0-based)
 func (c *Cache) ZRevRank(ctx context.Context, key, member string) (int64, error) {
 	key = c.genKey(key)
-	rank, err := c.client.ZRevRank(ctx, key, member).Result()
-	if err != nil {
-		if errors.Is(err, Nil) {
-			return 0, coreCache.ErrNotFound
-		}
-		return 0, err
-	}
-	return rank, nil
+	return c.client.ZRevRank(ctx, key, member).Result()
 }
 
 // ZRemRangeByRank removes members by rank range

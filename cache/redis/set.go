@@ -2,9 +2,6 @@ package redis
 
 import (
 	"context"
-	"errors"
-
-	coreCache "github.com/Rasikrr/core/cache"
 )
 
 func (c *Cache) SAdd(ctx context.Context, key string, members ...interface{}) error {
@@ -40,14 +37,7 @@ func (c *Cache) SMove(ctx context.Context, source, destination string, member in
 
 func (c *Cache) SPop(ctx context.Context, key string) (string, error) {
 	key = c.genKey(key)
-	result, err := c.client.SPop(ctx, key).Result()
-	if err != nil {
-		if errors.Is(err, Nil) {
-			return "", coreCache.ErrNotFound
-		}
-		return "", err
-	}
-	return result, nil
+	return c.client.SPop(ctx, key).Result()
 }
 
 func (c *Cache) SPopN(ctx context.Context, key string, count int64) ([]string, error) {
@@ -57,14 +47,7 @@ func (c *Cache) SPopN(ctx context.Context, key string, count int64) ([]string, e
 
 func (c *Cache) SRandMember(ctx context.Context, key string) (string, error) {
 	key = c.genKey(key)
-	result, err := c.client.SRandMember(ctx, key).Result()
-	if err != nil {
-		if errors.Is(err, Nil) {
-			return "", coreCache.ErrNotFound
-		}
-		return "", err
-	}
-	return result, nil
+	return c.client.SRandMember(ctx, key).Result()
 }
 
 func (c *Cache) SRandMemberN(ctx context.Context, key string, count int64) ([]string, error) {

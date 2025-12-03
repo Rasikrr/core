@@ -2,10 +2,7 @@ package redis
 
 import (
 	"context"
-	"errors"
 	"time"
-
-	coreCache "github.com/Rasikrr/core/cache"
 )
 
 func (c *Cache) HSet(ctx context.Context, key string, values ...interface{}) error {
@@ -22,9 +19,6 @@ func (c *Cache) HGet(ctx context.Context, key, field string) (any, error) {
 	key = c.genKey(key)
 	result, err := c.client.HGet(ctx, key, field).Result()
 	if err != nil {
-		if errors.Is(err, Nil) {
-			return nil, coreCache.ErrNotFound
-		}
 		return nil, err
 	}
 	return result, nil
@@ -34,9 +28,6 @@ func (c *Cache) HGetBytes(ctx context.Context, key, field string) ([]byte, error
 	key = c.genKey(key)
 	result, err := c.client.HGet(ctx, key, field).Bytes()
 	if err != nil {
-		if errors.Is(err, Nil) {
-			return nil, coreCache.ErrNotFound
-		}
 		return nil, err
 	}
 	return result, nil
@@ -46,9 +37,6 @@ func (c *Cache) HGetString(ctx context.Context, key, field string) (string, erro
 	key = c.genKey(key)
 	result, err := c.client.HGet(ctx, key, field).Result()
 	if err != nil {
-		if errors.Is(err, Nil) {
-			return "", coreCache.ErrNotFound
-		}
 		return "", err
 	}
 	return result, nil
@@ -58,9 +46,6 @@ func (c *Cache) HGetBool(ctx context.Context, key, field string) (bool, error) {
 	key = c.genKey(key)
 	result, err := c.client.HGet(ctx, key, field).Bool()
 	if err != nil {
-		if errors.Is(err, Nil) {
-			return false, coreCache.ErrNotFound
-		}
 		return false, err
 	}
 	return result, nil
@@ -70,9 +55,6 @@ func (c *Cache) HGetInt(ctx context.Context, key, field string) (int, error) {
 	key = c.genKey(key)
 	result, err := c.client.HGet(ctx, key, field).Int()
 	if err != nil {
-		if errors.Is(err, Nil) {
-			return 0, coreCache.ErrNotFound
-		}
 		return 0, err
 	}
 	return result, nil
@@ -82,9 +64,6 @@ func (c *Cache) HGetInt64(ctx context.Context, key, field string) (int64, error)
 	key = c.genKey(key)
 	result, err := c.client.HGet(ctx, key, field).Int64()
 	if err != nil {
-		if errors.Is(err, Nil) {
-			return 0, coreCache.ErrNotFound
-		}
 		return 0, err
 	}
 	return result, nil
@@ -94,9 +73,6 @@ func (c *Cache) HGetFloat32(ctx context.Context, key, field string) (float32, er
 	key = c.genKey(key)
 	result, err := c.client.HGet(ctx, key, field).Float32()
 	if err != nil {
-		if errors.Is(err, Nil) {
-			return 0, coreCache.ErrNotFound
-		}
 		return 0, err
 	}
 	return result, nil
@@ -106,9 +82,6 @@ func (c *Cache) HGetFloat64(ctx context.Context, key, field string) (float64, er
 	key = c.genKey(key)
 	result, err := c.client.HGet(ctx, key, field).Float64()
 	if err != nil {
-		if errors.Is(err, Nil) {
-			return 0, coreCache.ErrNotFound
-		}
 		return 0, err
 	}
 	return result, nil
@@ -118,9 +91,6 @@ func (c *Cache) HGetTime(ctx context.Context, key, field string) (time.Time, err
 	key = c.genKey(key)
 	result, err := c.client.HGet(ctx, key, field).Time()
 	if err != nil {
-		if errors.Is(err, Nil) {
-			return time.Time{}, coreCache.ErrNotFound
-		}
 		return time.Time{}, err
 	}
 	return result, nil

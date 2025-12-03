@@ -9,6 +9,10 @@ type ZRangeBy = redis.ZRangeBy
 type ZStore = redis.ZStore
 
 type PubSub = redis.PubSub
-type Message = redis.Message
 
-var Nil = redis.Nil
+type Message = redis.Message
+type StringCMD = redis.StringCmd
+
+var (
+	Nil = redis.Nil
+)

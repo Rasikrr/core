@@ -2,116 +2,53 @@ package redis
 
 import (
 	"context"
-	"errors"
 	"time"
-
-	coreCache "github.com/Rasikrr/core/cache"
 
 	"github.com/samber/lo"
 )
 
-func (c *Cache) Get(ctx context.Context, key string) (any, error) {
+func (c *Cache) GetRaw(ctx context.Context, key string) *StringCMD {
 	k := c.genKey(key)
-	val, err := c.client.Get(ctx, k).Result()
-	if err != nil {
-		if errors.Is(err, Nil) {
-			return nil, coreCache.ErrNotFound
-		}
-		return nil, err
-	}
-	return val, nil
+	return c.client.Get(ctx, k)
 }
 
 func (c *Cache) GetString(ctx context.Context, key string) (string, error) {
 	k := c.genKey(key)
-	val, err := c.client.Get(ctx, k).Result()
-	if err != nil {
-		if errors.Is(err, Nil) {
-			return "", coreCache.ErrNotFound
-		}
-		return "", err
-	}
-	return val, nil
+	return c.client.Get(ctx, k).Result()
 }
 
 func (c *Cache) GetBytes(ctx context.Context, key string) ([]byte, error) {
 	k := c.genKey(key)
-	val, err := c.client.Get(ctx, k).Bytes()
-	if err != nil {
-		if errors.Is(err, Nil) {
-			return nil, coreCache.ErrNotFound
-		}
-		return nil, err
-	}
-	return val, nil
+	return c.client.Get(ctx, k).Bytes()
 }
 
 func (c *Cache) GetBool(ctx context.Context, key string) (bool, error) {
 	k := c.genKey(key)
-	val, err := c.client.Get(ctx, k).Bool()
-	if err != nil {
-		if errors.Is(err, Nil) {
-			return false, coreCache.ErrNotFound
-		}
-		return false, err
-	}
-	return val, nil
+	return c.client.Get(ctx, k).Bool()
 }
 
 func (c *Cache) GetInt(ctx context.Context, key string) (int, error) {
 	k := c.genKey(key)
-	val, err := c.client.Get(ctx, k).Int()
-	if err != nil {
-		if errors.Is(err, Nil) {
-			return 0, coreCache.ErrNotFound
-		}
-		return 0, err
-	}
-	return val, nil
+	return c.client.Get(ctx, k).Int()
 }
 
 func (c *Cache) GetInt64(ctx context.Context, key string) (int64, error) {
 	k := c.genKey(key)
-	val, err := c.client.Get(ctx, k).Int64()
-	if err != nil {
-		if errors.Is(err, Nil) {
-			return 0, coreCache.ErrNotFound
-		}
-		return 0, err
-	}
-	return val, nil
+	return c.client.Get(ctx, k).Int64()
 }
 
 func (c *Cache) GetFloat32(ctx context.Context, key string) (float32, error) {
 	k := c.genKey(key)
-	val, err := c.client.Get(ctx, k).Float32()
-	if err != nil {
-		if errors.Is(err, Nil) {
-			return 0, coreCache.ErrNotFound
-		}
-	}
-	return val, err
+	return c.client.Get(ctx, k).Float32()
 }
 func (c *Cache) GetFloat64(ctx context.Context, key string) (float64, error) {
 	k := c.genKey(key)
-	val, err := c.client.Get(ctx, k).Float64()
-	if err != nil {
-		if errors.Is(err, Nil) {
-			return 0, coreCache.ErrNotFound
-		}
-	}
-	return val, err
+	return c.client.Get(ctx, k).Float64()
 }
 
 func (c *Cache) GetTime(ctx context.Context, key string) (time.Time, error) {
 	k := c.genKey(key)
-	val, err := c.client.Get(ctx, k).Time()
-	if err != nil {
-		if errors.Is(err, Nil) {
-			return time.Time{}, coreCache.ErrNotFound
-		}
-	}
-	return val, err
+	return c.client.Get(ctx, k).Time()
 }
 
 func (c *Cache) MGet(ctx context.Context, keys ...string) ([]any, error) {
@@ -123,4 +60,22 @@ func (c *Cache) MGet(ctx context.Context, keys ...string) ([]any, error) {
 		return nil, err
 	}
 	return values, nil
+}
+
+// GetSet atomically sets key to value and returns the old value
+func (c *Cache) GetSet(ctx context.Context, key string, value any) (string, error) {
+	k := c.genKey(key)
+	return c.client.GetSet(ctx, k, value).Result()
+}
+
+// GetDel atomically gets and deletes a key
+func (c *Cache) GetDel(ctx context.Context, key string) (string, error) {
+	k := c.genKey(key)
+	return c.client.GetDel(ctx, k).Result()
+}
+
+// GetEx gets the value and optionally sets expiration
+func (c *Cache) GetEx(ctx context.Context, key string, expiration time.Duration) (string, error) {
+	k := c.genKey(key)
+	return c.client.GetEx(ctx, k, expiration).Result()
 }

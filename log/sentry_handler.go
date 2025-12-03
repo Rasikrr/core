@@ -28,9 +28,9 @@ func newBreadcrumbHandler(next slog.Handler) *breadcrumbHandler {
 	return &breadcrumbHandler{next: next}
 }
 
-func (h *breadcrumbHandler) Enabled(ctx context.Context, level slog.Level) bool {
-	// Always enabled to capture breadcrumbs for all levels
-	return true
+// Collect logs for breadcrumbs only if level >= slog.Info
+func (h *breadcrumbHandler) Enabled(_ context.Context, level slog.Level) bool {
+	return level >= slog.LevelInfo
 }
 
 func (h *breadcrumbHandler) Handle(ctx context.Context, record slog.Record) error {

@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"time"
-
-	coreCache "github.com/Rasikrr/core/cache"
 )
 
 // Set sets the value of a key
@@ -31,45 +29,6 @@ func (c *Cache) SetNX(ctx context.Context, key string, value any, expiration tim
 func (c *Cache) SetXX(ctx context.Context, key string, value any, expiration time.Duration) (bool, error) {
 	k := c.genKey(key)
 	return c.client.SetXX(ctx, k, value, expiration).Result()
-}
-
-// GetSet atomically sets key to value and returns the old value
-func (c *Cache) GetSet(ctx context.Context, key string, value any) (string, error) {
-	k := c.genKey(key)
-	result, err := c.client.GetSet(ctx, k, value).Result()
-	if err != nil {
-		if errors.Is(err, Nil) {
-			return "", coreCache.ErrNotFound
-		}
-		return "", err
-	}
-	return result, nil
-}
-
-// GetDel atomically gets and deletes a key
-func (c *Cache) GetDel(ctx context.Context, key string) (string, error) {
-	k := c.genKey(key)
-	result, err := c.client.GetDel(ctx, k).Result()
-	if err != nil {
-		if errors.Is(err, Nil) {
-			return "", coreCache.ErrNotFound
-		}
-		return "", err
-	}
-	return result, nil
-}
-
-// GetEx gets the value and optionally sets expiration
-func (c *Cache) GetEx(ctx context.Context, key string, expiration time.Duration) (string, error) {
-	k := c.genKey(key)
-	result, err := c.client.GetEx(ctx, k, expiration).Result()
-	if err != nil {
-		if errors.Is(err, Nil) {
-			return "", coreCache.ErrNotFound
-		}
-		return "", err
-	}
-	return result, nil
 }
 
 // MSet sets multiple keys to multiple values
