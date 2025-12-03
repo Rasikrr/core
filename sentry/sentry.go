@@ -1,6 +1,7 @@
 package sentry
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -17,10 +18,15 @@ var (
 	once    sync.Once
 )
 
-func Init(config Config, env enum.Environment) error {
+func Enabled() bool {
+	return enabled.Load()
+}
+
+func Init(config Config, appName string, env enum.Environment) error {
 	var initErr error
 	once.Do(func() {
 		initErr = sentrySDK.Init(sentrySDK.ClientOptions{
+			ServerName:       appName,
 			Dsn:              config.DSN,
 			Environment:      env.String(),
 			Release:          version.GetVersion(),
@@ -29,6 +35,8 @@ func Init(config Config, env enum.Environment) error {
 			AttachStacktrace: true,
 			EnableTracing:    config.Tracing,
 			Debug:            config.Debug,
+			MaxBreadcrumbs:   100,
+			EnableLogs:       config.EnableLogs,
 			BeforeSend: func(event *sentrySDK.Event, _ *sentrySDK.EventHint) *sentrySDK.Event {
 				return event
 			},
@@ -43,15 +51,42 @@ func Init(config Config, env enum.Environment) error {
 	return nil
 }
 
-func Enabled() bool {
-	return enabled.Load()
+func ClearBreadcrumbs() {
+	if !Enabled() {
+		return
+	}
+	sentrySDK.CurrentHub().Scope().ClearBreadcrumbs()
 }
 
+// ClearBreadcrumbs clears all breadcrumbs from the current Sentry hub.
+// Typically called after application startup to prevent startup logs
+// from being included in error events.
 func CurrentHub() (*sentrySDK.Hub, error) {
 	if Enabled() {
 		return sentrySDK.CurrentHub(), nil
 	}
 	return nil, errors.New("sentry: sentry not enabled")
+}
+
+func GetHubFromContext(ctx context.Context) *sentrySDK.Hub {
+	if !Enabled() {
+		return nil
+	}
+	return sentrySDK.GetHubFromContext(ctx)
+}
+
+func Recover() {
+	if !Enabled() {
+		return
+	}
+	sentrySDK.Recover()
+}
+
+func RecoverWithContext(ctx context.Context) {
+	if !Enabled() {
+		return
+	}
+	sentrySDK.RecoverWithContext(ctx)
 }
 
 func Flush(timeout time.Duration) bool {

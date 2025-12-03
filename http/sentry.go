@@ -1,6 +1,7 @@
 package http
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/Rasikrr/core/sentry"
@@ -16,6 +17,17 @@ func (s *Server) setupSentryMiddleware() {
 		WaitForDelivery: false, // Не блокируем ответ (для production)
 		Timeout:         2 * time.Second,
 	})
+	// Clear breadcrumbs for each request to prevent accumulation
+	s.router.Use(clearBreadcrumbsMiddleware, sentryMiddleware.Handle)
+}
 
-	s.router.Use(sentryMiddleware.Handle)
+// clearBreadcrumbsMiddleware clears breadcrumbs at the start of each request
+// to ensure only request-specific breadcrumbs are captured
+func clearBreadcrumbsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if hub := sentry.GetHubFromContext(r.Context()); hub != nil {
+			hub.Scope().ClearBreadcrumbs()
+		}
+		next.ServeHTTP(w, r)
+	})
 }

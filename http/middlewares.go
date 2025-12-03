@@ -42,7 +42,7 @@ func (m *RecoverMiddleware) Handle(next http.Handler) http.Handler {
 
 		defer func() {
 			if err := recover(); err != nil {
-				log.Errorf(ctx, "panic while handling request: %v", err)
+				log.Warnf(ctx, "Recovered from panic in http: %v", err)
 				if !wrappedWriter.written {
 					SendError(w, NewError("Internal Server Error", http.StatusInternalServerError))
 				} else {

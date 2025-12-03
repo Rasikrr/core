@@ -8,8 +8,6 @@ import (
 
 	"github.com/Rasikrr/core/enum"
 	"github.com/Rasikrr/core/sentry"
-	"github.com/cockroachdb/errors"
-	sentryslog "github.com/getsentry/sentry-go/slog"
 	slogmulti "github.com/samber/slog-multi"
 )
 
@@ -66,34 +64,37 @@ func Default() Logger {
 	return defaultLogger
 }
 
-func Init(env enum.Environment, level enum.LogLevel, addSource bool) error {
-	lvl := level.ToSlogLevel()
+func Init(cfg Config) error {
 	opts := &slog.HandlerOptions{
-		Level:       lvl,
-		AddSource:   addSource,
+		Level:       cfg.Level.ToSlogLevel(),
+		AddSource:   cfg.AddSource,
 		ReplaceAttr: replaceLevelAttr,
 	}
+
 	var onceErr error
 	once.Do(func() {
-		handlers := make([]slog.Handler, 0, 2)
-		if sentry.Enabled() {
-			sentryHandler, err := getSentryHandler()
-			if err != nil {
-				onceErr = errors.Wrap(err, "logger init failed")
-				return
-			}
-			handlers = append(handlers, sentryHandler)
-		}
+		var (
+			handlers    = make([]slog.Handler, 0, 2)
+			baseHandler slog.Handler
+		)
 
-		switch env {
-		case enum.EnvironmentProd:
-			handlers = append(handlers, slog.NewJSONHandler(os.Stdout, opts))
+		switch cfg.Format {
+		case enum.LogFormatJSON:
+			baseHandler = slog.NewJSONHandler(os.Stdout, opts)
 		default:
-			handlers = append(handlers, slog.NewTextHandler(os.Stdout, opts))
+			baseHandler = slog.NewTextHandler(os.Stdout, opts)
 		}
-		handler := slogmulti.Fanout(handlers...)
+		handlers = append(handlers, baseHandler)
 
-		defaultLogger = &slogWrapper{base: slog.New(handler)}
+		if sentry.Enabled() {
+			handlers = append(handlers, sentryHandler())
+		}
+
+		defaultLogger = &slogWrapper{
+			base: slog.New(
+				slogmulti.Fanout(handlers...),
+			),
+		}
 	})
 	return onceErr
 }
@@ -107,11 +108,4 @@ func replaceLevelAttr(_ []string, a slog.Attr) slog.Attr {
 		}
 	}
 	return a
-}
-
-func getSentryHandler() (slog.Handler, error) {
-	return sentryslog.Option{
-		EventLevel: []slog.Level{slog.LevelError},
-		LogLevel:   []slog.Level{slog.LevelWarn, slog.LevelInfo},
-	}.NewSentryHandler(context.Background()), nil
 }

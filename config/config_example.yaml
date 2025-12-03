@@ -6,13 +6,15 @@ environment: prod # dev, prod
 log:
   level: debug # debug, info, warn, error
   add_source: true
+  format: json
 
 sentry:
   enabled: true
   sample_rate: 1.0 # [0.0, 1.0]
-  tracing: false
+  tracing: false # don't use tracing. use OTel
   traces_sample_rate: 0.0 # [0.0, 1.0]
   debug: false
+  enable_logs: false # for logs collecting (info, warn, debug). don't use, use loki, elk etc.
 
 metrics:
   enabled: false

@@ -15,6 +15,7 @@ import (
 	"github.com/Rasikrr/core/http"
 	"github.com/Rasikrr/core/interfaces"
 	"github.com/Rasikrr/core/log"
+	"github.com/Rasikrr/core/sentry"
 	"github.com/Rasikrr/core/version"
 	"github.com/robfig/cron/v3"
 	"go.uber.org/multierr"
@@ -22,7 +23,6 @@ import (
 
 // nolint: unused
 type App struct {
-	name   string
 	config *config.Config
 	redis  *redis.Cache
 
@@ -58,7 +58,6 @@ func NewApp(ctx context.Context) *App {
 
 func NewAppWithConfig(ctx context.Context, cfg *config.Config) *App {
 	app := &App{
-		name:   cfg.Name(),
 		config: cfg,
 	}
 	version.SetVersion(cfg.AppVersion())
@@ -99,7 +98,7 @@ func (a *App) Start(ctx context.Context) error {
 	a.cancelFunc = cancel
 	log.Info(ctx,
 		"starting application",
-		log.String("name", a.name),
+		log.String("name", a.Config().AppName),
 		log.String("version", version.GetVersion()),
 		log.String("env", environment.GetEnv().String()),
 	)
@@ -145,8 +144,11 @@ func (a *App) start(ctx context.Context) error {
 			errCh <- s.Start(ctx)
 		}()
 	}
+
+	log.Debugf(ctx, "len of starters: %d", len(a.starters.starters))
+	sentry.ClearBreadcrumbs()
+
 	var multiErr error
-	log.Debug(ctx, "len of starters", log.Int("len", len(a.starters.starters)))
 
 	for range len(a.starters.starters) {
 		select {

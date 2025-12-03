@@ -11,6 +11,7 @@ type Config struct {
 	Tracing          bool    `yaml:"tracing"`
 	TracesSampleRate float64 `yaml:"traces_sample_rate"`
 	Debug            bool    `yaml:"debug"`
+	EnableLogs       bool    `yaml:"enable_logs"`
 }
 
 func (c Config) Validate() error {

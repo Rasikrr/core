@@ -13,7 +13,7 @@ func (a *App) initSentry(ctx context.Context) error {
 		log.Info(ctx, "sentry disabled")
 		return nil
 	}
-	err := sentry.Init(a.Config().Sentry, a.Config().Env())
+	err := sentry.Init(a.Config().Sentry, a.Config().AppName, a.Config().Env())
 	if err != nil {
 		return err
 	}
