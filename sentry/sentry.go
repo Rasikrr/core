@@ -68,6 +68,12 @@ func CurrentHub() (*sentrySDK.Hub, error) {
 	return nil, errors.New("sentry: sentry not enabled")
 }
 
+func SetHubOnCtx(ctx context.Context) context.Context {
+	hubClone := sentrySDK.CurrentHub().Clone()
+	hubClone.Scope().ClearBreadcrumbs()
+	return sentrySDK.SetHubOnContext(ctx, hubClone)
+}
+
 func GetHubFromContext(ctx context.Context) *sentrySDK.Hub {
 	if !Enabled() {
 		return nil
