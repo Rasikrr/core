@@ -7,6 +7,8 @@ import (
 	"sync"
 
 	"github.com/Rasikrr/core/enum"
+	"github.com/Rasikrr/core/sentry"
+	slogmulti "github.com/samber/slog-multi"
 )
 
 var (
@@ -62,31 +64,46 @@ func Default() Logger {
 	return defaultLogger
 }
 
-func Init(env enum.Environment, level enum.LogLevel, addSource bool) {
-	lvl := level.ToSlogLevel()
+func Init(cfg Config) error {
 	opts := &slog.HandlerOptions{
-		Level:       lvl,
-		AddSource:   addSource,
+		Level:       cfg.Level.ToSlogLevel(),
+		AddSource:   cfg.AddSource,
 		ReplaceAttr: replaceLevelAttr,
 	}
+
+	var onceErr error
 	once.Do(func() {
-		var handler slog.Handler
-		switch env {
-		case enum.EnvironmentProd:
-			handler = slog.NewJSONHandler(os.Stdout, opts)
+		var (
+			handlers    = make([]slog.Handler, 0, 2)
+			baseHandler slog.Handler
+		)
+
+		switch cfg.Format {
+		case enum.LogFormatJSON:
+			baseHandler = slog.NewJSONHandler(os.Stdout, opts)
 		default:
-			handler = slog.NewTextHandler(os.Stdout, opts)
+			baseHandler = slog.NewTextHandler(os.Stdout, opts)
 		}
-		defaultLogger = &slogWrapper{base: slog.New(handler)}
+		handlers = append(handlers, baseHandler)
+
+		if sentry.Enabled() {
+			handlers = append(handlers, sentryHandler())
+		}
+
+		defaultLogger = &slogWrapper{
+			base: slog.New(
+				slogmulti.Fanout(handlers...),
+			),
+		}
 	})
+	return onceErr
 }
 
 // nolint: gocritic
 func replaceLevelAttr(_ []string, a slog.Attr) slog.Attr {
 	if a.Key == slog.LevelKey {
 		level := a.Value.Any().(slog.Level)
-		switch level {
-		case LevelFatal:
+		if level == LevelFatal {
 			return slog.String(slog.LevelKey, FatalString)
 		}
 	}

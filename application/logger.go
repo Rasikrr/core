@@ -4,10 +4,6 @@ import (
 	"github.com/Rasikrr/core/log"
 )
 
-func (a *App) InitLogger() {
-	log.Init(
-		a.Config().Env(),
-		a.Config().LoggerConfig().Level,
-		a.Config().LoggerConfig().AddSource,
-	)
+func (a *App) InitLogger() error {
+	return log.Init(a.Config().Logger)
 }

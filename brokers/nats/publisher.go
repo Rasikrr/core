@@ -2,6 +2,7 @@ package nats
 
 import (
 	"context"
+	"time"
 
 	"github.com/Rasikrr/core/interfaces"
 	"github.com/Rasikrr/core/log"
@@ -20,7 +21,11 @@ type publisher struct {
 
 func NewPublisher(addr string) (Publisher, error) {
 	initNATSMetrics()
-	conn, err := nats.Connect(addr)
+	conn, err := nats.Connect(
+		addr,
+		nats.MaxReconnects(-1), // бесконечные реконнекты
+		nats.ReconnectWait(time.Second),
+	)
 	if err != nil {
 		return nil, err
 	}

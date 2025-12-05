@@ -14,7 +14,7 @@ func (a *App) initGRPC(ctx context.Context) error {
 	}
 
 	a.grpcServer = coreGrpc.NewServer(
-		a.Config().GRPCConfig(),
+		a.Config().GRPC,
 	)
 
 	log.Info(ctx, "grpc initialized")

@@ -8,12 +8,12 @@ import (
 )
 
 func (a *App) initPostgres(ctx context.Context) error {
-	if !a.config.Postgres.Required {
+	if !a.Config().Postgres.Required {
 		return nil
 	}
 
 	var err error
-	a.postgres, err = database.NewPostgres(ctx, a.Config().PostgresConfig())
+	a.postgres, err = database.NewPostgres(ctx, a.Config().Postgres)
 	if err != nil {
 		return err
 	}

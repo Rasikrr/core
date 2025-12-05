@@ -11,12 +11,12 @@ import (
 // nolint: unparam
 func (a *App) initMetrics(ctx context.Context) error {
 	metrics.Init(
-		a.Config().MetricsConfig().Enabled,
-		a.Config().MetricsConfig().Namespace,
+		a.Config().Metrics.Enabled,
+		a.Config().Metrics.Namespace,
 		nil,
 	)
 	if metrics.Enabled() {
-		a.metricsServer = http.NewMetricsServer(ctx, a.Config().MetricsConfig())
+		a.metricsServer = http.NewMetricsServer(ctx, a.Config().Metrics.Prometheus.Port)
 		a.starters.Add(a.metricsServer)
 		a.closers.Add(a.metricsServer)
 		log.Infof(ctx, "metrics server initialized")

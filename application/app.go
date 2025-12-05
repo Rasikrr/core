@@ -7,13 +7,15 @@ import (
 	"syscall"
 
 	"github.com/Rasikrr/core/brokers/nats"
+	"github.com/Rasikrr/core/cache/redis"
 	"github.com/Rasikrr/core/config"
 	"github.com/Rasikrr/core/database"
+	"github.com/Rasikrr/core/environment"
 	coreGrpc "github.com/Rasikrr/core/grpc"
 	"github.com/Rasikrr/core/http"
 	"github.com/Rasikrr/core/interfaces"
 	"github.com/Rasikrr/core/log"
-	"github.com/Rasikrr/core/redis"
+	"github.com/Rasikrr/core/sentry"
 	"github.com/Rasikrr/core/version"
 	"github.com/robfig/cron/v3"
 	"go.uber.org/multierr"
@@ -21,9 +23,8 @@ import (
 
 // nolint: unused
 type App struct {
-	name   string
 	config *config.Config
-	redis  redis.Cache
+	redis  *redis.Cache
 
 	postgres          *database.Postgres
 	postgresTXManager database.TXManager
@@ -57,12 +58,19 @@ func NewApp(ctx context.Context) *App {
 
 func NewAppWithConfig(ctx context.Context, cfg *config.Config) *App {
 	app := &App{
-		name:   cfg.Name(),
 		config: cfg,
 	}
-	version.SetVersion(cfg.Env())
-	app.InitLogger()
-	log.Info(context.Background(), "logger initialized")
+	version.SetVersion(cfg.AppVersion())
+	environment.SetEnv(cfg.Env())
+
+	if err := app.initSentry(ctx); err != nil {
+		log.Fatalf(ctx, "failed to initialize sentry: %v", err)
+	}
+
+	if err := app.InitLogger(); err != nil {
+		log.Fatalf(ctx, "failed to initialize logger: %v", err)
+	}
+	log.Info(ctx, "logger initialized")
 
 	if err := app.initMetrics(ctx); err != nil {
 		log.Fatalf(ctx, "failed to init metrics: %v", err)
@@ -88,6 +96,12 @@ func NewAppWithConfig(ctx context.Context, cfg *config.Config) *App {
 func (a *App) Start(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	a.cancelFunc = cancel
+	log.Info(ctx,
+		"starting application",
+		log.String("name", a.Config().AppName),
+		log.String("version", version.GetVersion()),
+		log.String("env", environment.GetEnv().String()),
+	)
 
 	if err := a.initJobManager(ctx); err != nil {
 		return err
@@ -123,15 +137,18 @@ func (a *App) start(ctx context.Context) error {
 		}
 	}()
 
-	errCh := make(chan error, len(a.starters.starters))
+	errCh := make(chan error)
 
 	for _, s := range a.starters.starters {
 		go func() {
 			errCh <- s.Start(ctx)
 		}()
 	}
+
+	log.Debugf(ctx, "len of starters: %d", len(a.starters.starters))
+	sentry.ClearBreadcrumbs()
+
 	var multiErr error
-	log.Debug(ctx, "len of starters", log.Int("len", len(a.starters.starters)))
 
 	for range len(a.starters.starters) {
 		select {
@@ -168,6 +185,10 @@ func (a *App) gracefulShutdown(ctx context.Context, stopChan chan struct{}) {
 	if err := a.Close(ctx); err != nil {
 		log.Errorf(ctx, "error while closing app: %v", err)
 	}
+
+	// Flush Sentry events before shutdown
+	a.flushSentry(ctx)
+
 	close(stopChan)
 }
 
@@ -199,9 +220,9 @@ func (a *App) HTTPServer() *http.Server {
 	return a.httpServer
 }
 
-func (a *App) Redis() redis.Cache {
+func (a *App) Redis() *redis.Cache {
 	if a.redis == nil {
-		log.Fatalf(context.Background(), "redis is not initialized or not required. please check your config")
+		log.Fatalf(context.Background(), "cache is not initialized or not required. please check your config")
 	}
 	return a.redis
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/Rasikrr/core/config"
 	"github.com/go-chi/chi/v5"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -14,15 +13,15 @@ const (
 	defaultHost = "0.0.0.0"
 )
 
-func NewMetricsServer(_ context.Context, cfg config.Metrics) *Server {
+func NewMetricsServer(_ context.Context, port string) *Server {
 	router := chi.NewRouter()
 
 	srv := &Server{
 		name: name,
-		port: cfg.Prometheus.Port,
+		port: port,
 		host: defaultHost,
 		srv: &http.Server{
-			Addr:         address(defaultHost, cfg.Prometheus.Port),
+			Addr:         address(defaultHost, port),
 			Handler:      router,
 			ReadTimeout:  readTimeout,
 			WriteTimeout: writeTimeout,

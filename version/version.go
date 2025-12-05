@@ -2,21 +2,19 @@ package version
 
 import (
 	"sync"
-
-	"github.com/Rasikrr/core/enum"
 )
 
 var (
 	versionOnce sync.Once
-	version     enum.Environment
+	version     string
 )
 
-func SetVersion(v enum.Environment) {
+func SetVersion(v string) {
 	versionOnce.Do(func() {
 		version = v
 	})
 }
 
-func GetVersion() enum.Environment {
+func GetVersion() string {
 	return version
 }
