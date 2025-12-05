@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/Rasikrr/core/sentry"
 	sentrySDK "github.com/getsentry/sentry-go"
 	sentryslog "github.com/getsentry/sentry-go/slog"
 )
@@ -38,30 +37,25 @@ func (h *breadcrumbHandler) Handle(ctx context.Context, record slog.Record) erro
 	// This prevents breadcrumbs from startup logs polluting request-specific breadcrumbs
 	hub := sentrySDK.GetHubFromContext(ctx)
 	if hub == nil {
-		var err error
-		hub, err = sentry.CurrentHub()
-		if err != nil {
-			return nil
-		}
+		return nil
 	}
-	if hub != nil {
-		// Collect attributes
-		data := make(map[string]interface{})
-		record.Attrs(func(attr slog.Attr) bool {
-			data[attr.Key] = attr.Value.Any()
-			return true
-		})
 
-		// Add breadcrumb to request-specific Hub
-		hub.AddBreadcrumb(&sentrySDK.Breadcrumb{
-			Type:      "default",
-			Category:  "log",
-			Message:   record.Message,
-			Level:     convertSlogLevelToSentry(record.Level),
-			Data:      data,
-			Timestamp: record.Time,
-		}, nil)
-	}
+	// Collect attributes
+	data := make(map[string]interface{})
+	record.Attrs(func(attr slog.Attr) bool {
+		data[attr.Key] = attr.Value.Any()
+		return true
+	})
+
+	// Add breadcrumb to request-specific Hub
+	hub.AddBreadcrumb(&sentrySDK.Breadcrumb{
+		Type:      "default",
+		Category:  "log",
+		Message:   record.Message,
+		Level:     convertSlogLevelToSentry(record.Level),
+		Data:      data,
+		Timestamp: record.Time,
+	}, nil)
 
 	// Pass to next handler only if it's enabled for this level
 	// (sentryslog only handles errors, but breadcrumbs are captured for all)
