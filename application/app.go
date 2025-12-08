@@ -53,10 +53,10 @@ func NewApp(ctx context.Context) *App {
 	if err != nil {
 		log.Fatalf(ctx, "failed to parse config: %v", err)
 	}
-	return NewAppWithConfig(ctx, &cfg)
+	return newAppWithConfig(ctx, &cfg)
 }
 
-func NewAppWithConfig(ctx context.Context, cfg *config.Config) *App {
+func newAppWithConfig(ctx context.Context, cfg *config.Config) *App {
 	app := &App{
 		config: cfg,
 	}
