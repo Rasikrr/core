@@ -2,7 +2,7 @@ package redis
 
 import "context"
 
-func (c *Cache) Exists(ctx context.Context, key string) (bool, error) {
+func (c *Client) Exists(ctx context.Context, key string) (bool, error) {
 	k := c.genKey(key)
 	exists, err := c.client.Exists(ctx, k).Result()
 	if err != nil {

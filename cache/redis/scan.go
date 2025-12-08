@@ -19,7 +19,7 @@ import "context"
 //	        break // iteration complete
 //	    }
 //	}
-func (c *Cache) Scan(ctx context.Context, cursor uint64, match string, count int64) ([]string, uint64, error) {
+func (c *Client) Scan(ctx context.Context, cursor uint64, match string, count int64) ([]string, uint64, error) {
 	prefixedMatch := c.genKey(match)
 
 	keys, nextCursor, err := c.client.Scan(ctx, cursor, prefixedMatch, count).Result()
@@ -42,13 +42,13 @@ func (c *Cache) Scan(ctx context.Context, cursor uint64, match string, count int
 }
 
 // SScan iterates over members of a set
-func (c *Cache) SScan(ctx context.Context, key string, cursor uint64, match string, count int64) ([]string, uint64, error) {
+func (c *Client) SScan(ctx context.Context, key string, cursor uint64, match string, count int64) ([]string, uint64, error) {
 	key = c.genKey(key)
 	return c.client.SScan(ctx, key, cursor, match, count).Result()
 }
 
 // HScan iterates over fields of a hash
-func (c *Cache) HScan(ctx context.Context, key string, cursor uint64, match string, count int64) ([]string, uint64, error) {
+func (c *Client) HScan(ctx context.Context, key string, cursor uint64, match string, count int64) ([]string, uint64, error) {
 	key = c.genKey(key)
 	return c.client.HScan(ctx, key, cursor, match, count).Result()
 }

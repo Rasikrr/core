@@ -6,17 +6,19 @@ import (
 	"net"
 
 	"github.com/Rasikrr/core/log"
+	"github.com/Rasikrr/core/tracing"
+	"github.com/redis/go-redis/extra/redisotel/v9"
 
 	"github.com/redis/go-redis/v9"
 )
 
-type Cache struct {
+type Client struct {
 	logger log.Logger
 	client *redis.Client
 	prefix string
 }
 
-func NewRedisCache(ctx context.Context, cfg Config, prefix string) (*Cache, error) {
+func NewRedisCache(ctx context.Context, cfg Config, prefix string) (*Client, error) {
 	addr := net.JoinHostPort(
 		cfg.Host,
 		cfg.Port,
@@ -35,17 +37,26 @@ func NewRedisCache(ctx context.Context, cfg Config, prefix string) (*Cache, erro
 
 	client := redis.NewClient(opt)
 
+	if tracing.Enabled() {
+		err := redisotel.InstrumentTracing(client)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	if err := client.Ping(ctx).Err(); err != nil {
 		return nil, err
 	}
 
-	return &Cache{
-		logger: log.With(log.String("system", "redis")),
+	return &Client{
+		logger: log.With(
+			log.String("system", "redis"),
+		),
 		client: client,
 		prefix: prefix,
 	}, nil
 }
 
-func (c *Cache) genKey(k string) string {
+func (c *Client) genKey(k string) string {
 	return fmt.Sprintf("%s:%s", c.prefix, k)
 }

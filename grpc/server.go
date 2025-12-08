@@ -7,7 +7,9 @@ import (
 	"net"
 
 	"github.com/Rasikrr/core/log"
+	"github.com/Rasikrr/core/tracing"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 )
 
@@ -66,7 +68,6 @@ func newGrpcServer() *grpc.Server {
 
 	unaryInterceptors := []grpc.UnaryServerInterceptor{
 		unaryPanicRecoveryInterceptor,
-		UnaryServerSentryInterceptor,
 		metrics.UnaryServer(),
 	}
 	streamInterceptors := []grpc.StreamServerInterceptor{
@@ -85,5 +86,11 @@ func newGrpcServer() *grpc.Server {
 			streamInterceptors...,
 		),
 	)
-	return grpc.NewServer(unary, stream)
+
+	opts := []grpc.ServerOption{unary, stream}
+	if tracing.Enabled() {
+		opts = append(opts, grpc.StatsHandler(otelgrpc.NewServerHandler()))
+	}
+
+	return grpc.NewServer(opts...)
 }

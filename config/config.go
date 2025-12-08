@@ -17,6 +17,7 @@ import (
 	"github.com/Rasikrr/core/log"
 	"github.com/Rasikrr/core/metrics"
 	"github.com/Rasikrr/core/sentry"
+	"github.com/Rasikrr/core/tracing"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/joho/godotenv"
 )
@@ -27,7 +28,7 @@ var (
 
 type Config struct {
 	AppName     string           `yaml:"name"`
-	Environment enum.Environment `yaml:"environment" env:"ENVIRONMENT"`
+	Environment enum.Environment `env:"ENVIRONMENT"`
 	Version     string           `desc:"git tag -> commit hash -> unknown"`
 	Variables   Variables        `yaml:"env"`
 
@@ -38,6 +39,7 @@ type Config struct {
 	Redis    redis.Config    `yaml:"redis"`
 	NATS     nats.Config     `yaml:"nats"`
 	Metrics  metrics.Config  `yaml:"metrics"`
+	Tracing  tracing.Config  `yaml:"tracing"`
 	Sentry   sentry.Config   `yaml:"sentry"`
 }
 

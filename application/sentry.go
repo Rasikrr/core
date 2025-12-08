@@ -22,7 +22,7 @@ func (a *App) initSentry(ctx context.Context) error {
 }
 
 func (a *App) flushSentry(ctx context.Context) {
-	if !a.Config().Sentry.Enabled {
+	if !sentry.Enabled() {
 		return
 	}
 	log.Info(ctx, "flushing sentry events before shutdown")

@@ -15,7 +15,7 @@ func (s *Subscription) Close() error {
 	return s.pubSub.Close()
 }
 
-func (c *Cache) Publish(ctx context.Context, channel string, data any) error {
+func (c *Client) Publish(ctx context.Context, channel string, data any) error {
 	return c.client.Publish(ctx, channel, data).Err()
 }
 
@@ -30,11 +30,11 @@ func (c *Cache) Publish(ctx context.Context, channel string, data any) error {
 //	for msg := range pubsub.Channel() {
 //	    fmt.Println("Received:", msg.Payload)
 //	}
-func (c *Cache) Subscribe(ctx context.Context, channels ...string) *PubSub {
+func (c *Client) Subscribe(ctx context.Context, channels ...string) *PubSub {
 	return c.client.Subscribe(ctx, channels...)
 }
 
-func (c *Cache) SubscribeWithHandler(
+func (c *Client) SubscribeWithHandler(
 	ctx context.Context,
 	handler func(msg *Message) error,
 	channels ...string,
@@ -70,6 +70,6 @@ func (c *Cache) SubscribeWithHandler(
 	}, nil
 }
 
-func (c *Cache) PSubscribe(ctx context.Context, patterns ...string) *goredis.PubSub {
+func (c *Client) PSubscribe(ctx context.Context, patterns ...string) *goredis.PubSub {
 	return c.client.PSubscribe(ctx, patterns...)
 }

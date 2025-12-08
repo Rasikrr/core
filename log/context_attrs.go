@@ -10,9 +10,10 @@ import (
 
 func getAttrsFromCtx(ctx context.Context) []slog.Attr {
 	var attrs []slog.Attr
-	if reqID, ok := coreCtx.RequestID(ctx); ok {
-		attrs = append(attrs, slog.String(string(coreCtx.CtxKeyRequestID), reqID))
+	if traceID, ok := coreCtx.TraceID(ctx); ok {
+		attrs = append(attrs, slog.String(string(coreCtx.CtxKeyTraceID), traceID))
 	}
+
 	if userID, ok := coreCtx.UserID(ctx); ok {
 		attrs = append(attrs, slog.String(string(coreCtx.CtxKeyUserID), userID))
 	}
