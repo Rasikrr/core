@@ -4,12 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
-	"time"
-
 	"github.com/Rasikrr/core/log"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"net/http"
+	"time"
 )
 
 const (
@@ -47,11 +46,11 @@ func NewServer(
 	}
 	srv.WithMiddlewares(NewRecoverMiddleware())
 
+	srv.setupTracingMiddleware()
 	srv.setupSentryMiddleware()
 
 	initHTTPMetrics()
 	srv.WithMiddlewares(m)
-
 	srv.registerDefaultMiddlewares()
 	return srv
 }
@@ -82,7 +81,6 @@ func (s *Server) Start(ctx context.Context) error {
 
 func (s *Server) registerDefaultMiddlewares() {
 	// use default chi middlewares
-	s.router.Use(middleware.RequestID)
 	s.router.Use(middleware.RealIP)
 	s.router.Use(middleware.Logger)
 }
