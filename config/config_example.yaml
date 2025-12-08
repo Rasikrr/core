@@ -1,6 +1,6 @@
 
 name: core # name of application
-environment: prod # dev, prod
+# environment: prod | dev, prod (Removed to .env)
 # version is auto-detected from Git (priority: tag → commit hash → "unknown")
 
 log:
@@ -22,6 +22,9 @@ metrics:
   prometheus:
     port: 9100
 
+tracing:
+  enabled: true
+
 http:
   host: 0.0.0.0
   port: 8080
@@ -33,13 +36,13 @@ grpc:
   required: true
 
 postgres:
-  required: false
+  required: true
   max_conns: 10
   min_conns: 3
   max_idle_conn_time: 10m
 
 redis:
-  required: false
+  required: true
   pool_size: 10
   min_idle_conns: 3
   max_idle_conns: 10
@@ -47,7 +50,6 @@ redis:
 
 nats:
   required: false
-  dsn: localhost:4222
   queue: example_queue # It is like load balancer, read more about it here: https://docs.nats.io/nats-concepts/core-nats/queue
 
 # If you not provide 'required' field or set it to false, then variable will be ignored
@@ -94,4 +96,16 @@ env:
     type: "string"
     env_name: "EX_STRING"
     required: false
+
+  nats_dsn:
+    type: "string"
+    env_name: "NATS_DSN"
+    required: false
+
+  env:
+    type: "string"
+    env_name: "ENV"
+    required: true
+
+
 

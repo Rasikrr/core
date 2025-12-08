@@ -5,7 +5,9 @@ import (
 	"time"
 
 	"github.com/Rasikrr/core/log"
+	"github.com/Rasikrr/core/tracing"
 	"github.com/avast/retry-go"
+	"github.com/exaring/otelpgx"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -25,6 +27,9 @@ func NewPostgres(ctx context.Context, cfg Config) (*Postgres, error) {
 	conConfig.MaxConns = int32(cfg.MaxConns)
 	conConfig.MinConns = int32(cfg.MinConns)
 	conConfig.MaxConnIdleTime = cfg.MaxIdleConnIdleTime
+	if tracing.Enabled() {
+		conConfig.ConnConfig.Tracer = otelpgx.NewTracer()
+	}
 
 	pool, err := pgxpool.NewWithConfig(ctx, conConfig)
 	if err != nil {

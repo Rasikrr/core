@@ -12,6 +12,7 @@ func (a *App) initHTTP(ctx context.Context) error {
 	if !a.Config().HTTP.Required {
 		return nil
 	}
+	a.Config().HTTP.Name = a.Config().AppName
 
 	a.httpServer = http.NewServer(
 		ctx,

@@ -4,6 +4,6 @@ import (
 	"context"
 )
 
-func (c *Cache) Close(_ context.Context) error {
+func (c *Client) Close(_ context.Context) error {
 	return c.client.Close()
 }

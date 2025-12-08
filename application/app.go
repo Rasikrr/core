@@ -24,7 +24,7 @@ import (
 // nolint: unused
 type App struct {
 	config *config.Config
-	redis  *redis.Cache
+	redis  *redis.Client
 
 	postgres          *database.Postgres
 	postgresTXManager database.TXManager
@@ -70,8 +70,10 @@ func NewAppWithConfig(ctx context.Context, cfg *config.Config) *App {
 	if err := app.InitLogger(); err != nil {
 		log.Fatalf(ctx, "failed to initialize logger: %v", err)
 	}
-	log.Info(ctx, "logger initialized")
 
+	if err := app.initTracing(ctx); err != nil {
+		log.Fatalf(ctx, "failed to initialize tracing: %v", err)
+	}
 	if err := app.initMetrics(ctx); err != nil {
 		log.Fatalf(ctx, "failed to init metrics: %v", err)
 	}
@@ -220,7 +222,7 @@ func (a *App) HTTPServer() *http.Server {
 	return a.httpServer
 }
 
-func (a *App) Redis() *redis.Cache {
+func (a *App) Redis() *redis.Client {
 	if a.redis == nil {
 		log.Fatalf(context.Background(), "cache is not initialized or not required. please check your config")
 	}

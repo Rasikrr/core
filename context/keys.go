@@ -5,16 +5,16 @@ import "context"
 type ctxKey string
 
 const (
-	CtxKeyRequestID ctxKey = "request_id"
-	CtxKeyUserID    ctxKey = "user_id"
+	CtxKeyTraceID ctxKey = "trace_id"
+	CtxKeyUserID  ctxKey = "user_id"
 )
 
-func WithRequestID(ctx context.Context, id string) context.Context {
-	return context.WithValue(ctx, CtxKeyRequestID, id)
+func WithTraceID(ctx context.Context, id string) context.Context {
+	return context.WithValue(ctx, CtxKeyTraceID, id)
 }
 
-func RequestID(ctx context.Context) (string, bool) {
-	v, ok := ctx.Value(CtxKeyRequestID).(string)
+func TraceID(ctx context.Context) (string, bool) {
+	v, ok := ctx.Value(CtxKeyTraceID).(string)
 	return v, ok
 }
 
