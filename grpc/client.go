@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/Rasikrr/core/tracing"
-	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 )
 
@@ -19,7 +18,7 @@ func NewClient(
 	opts ...grpc.DialOption,
 ) (*Client, error) {
 	if tracing.Enabled() {
-		opts = append(opts, tracingInterceptor())
+		opts = append(opts, tracingClientInterceptor())
 	}
 	return NewClientWithOptions(ctx, addr, opts...)
 }
@@ -44,8 +43,4 @@ func (c *Client) Invoke(ctx context.Context, method string, args, reply any, opt
 
 func (c *Client) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 	return c.conn.NewStream(ctx, desc, method, opts...)
-}
-
-func tracingInterceptor() grpc.DialOption {
-	return grpc.WithStatsHandler(otelgrpc.NewClientHandler())
 }
