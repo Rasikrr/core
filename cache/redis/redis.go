@@ -26,6 +26,7 @@ func NewRedisCache(ctx context.Context, cfg Config, prefix string) (*Client, err
 
 	opt := &redis.Options{
 		Addr:         addr,
+		ClientName:   fmt.Sprintf("redis-%s", prefix),
 		Username:     cfg.User,
 		Password:     cfg.Password,
 		DB:           cfg.DB,

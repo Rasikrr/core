@@ -8,6 +8,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
@@ -29,6 +30,12 @@ func Init(ctx context.Context, cfg Config, appName string) error {
 	var err error
 
 	once.Do(func() {
+		// 1. Настраиваем propagator для передачи trace context между сервисами
+		otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+			propagation.TraceContext{},
+			propagation.Baggage{},
+		))
+
 		var exporter *otlptrace.Exporter
 		exporter, err = otlptracegrpc.New(ctx,
 			otlptracegrpc.WithEndpoint(cfg.DSN),
