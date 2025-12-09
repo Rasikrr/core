@@ -44,7 +44,7 @@ func (m *RecoverMiddleware) Handle(next http.Handler) http.Handler {
 			if err := recover(); err != nil {
 				log.Warnf(ctx, "Recovered from panic in http: %v", err)
 				if !wrappedWriter.written {
-					SendError(w, NewError("Internal Server Error", http.StatusInternalServerError))
+					SendError(ctx, w, NewError("Internal Server Error", http.StatusInternalServerError))
 				} else {
 					log.Warnf(ctx, "cannot set status 500: response already written with status %d", wrappedWriter.statusCode)
 				}
