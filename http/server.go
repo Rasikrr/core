@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/Rasikrr/core/log"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"net/http"
-	"time"
 )
 
 const (
@@ -101,7 +102,7 @@ func address(host, port string) string {
 func addHealthRoute(router *chi.Mux) {
 	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		log.Info(r.Context(), "health check")
-		SendData(w, map[string]string{
+		SendData(r.Context(), w, map[string]string{
 			"status": "OK",
 		}, http.StatusOK)
 	})
