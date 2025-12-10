@@ -22,12 +22,12 @@ type Subscriber interface {
 }
 
 type SubscriberHandler interface {
-	Handle(m *nats.Msg) error
+	Handle(ctx context.Context, m *Msg) error
 	Subject() string
 }
 
 type subscriber struct {
-	nc       *nats.Conn
+	nc       *Conn
 	queue    string
 	handlers []SubscriberHandler
 }
@@ -64,11 +64,15 @@ func (s *subscriber) WithHandlers(handlers ...SubscriberHandler) {
 }
 
 func (s *subscriber) Subscribe(ctx context.Context, subject string, handler SubscriberHandler) error {
-	l := log.With(log.String("subject", subject))
+	l := log.With(
+		log.String("subject", subject),
+	)
+
 	sub, err := s.nc.SubscribeSync(subject)
 	if err != nil {
 		return err
 	}
+
 	go func() {
 		defer func() {
 			if err := sub.Unsubscribe(); err != nil {
@@ -95,13 +99,20 @@ func (s *subscriber) Subscribe(ctx context.Context, subject string, handler Subs
 					metrics.recvBytes.WithLabelValues(subject).Observe(float64(len(msg.Data)))
 				}
 
+				// Извлекаем trace context из заголовков сообщения
+				handlerCtx, span := extractTraceContext(ctx, msg, fmt.Sprintf("nats.handle %s", subject))
+
 				start := time.Now()
 				metrics.inflightReq.WithLabelValues(subject).Inc()
-				if err := handler.Handle(msg); err != nil {
-					l.Error(ctx, "handle message error", log.Err(err))
+
+				if err := handler.Handle(handlerCtx, msg); err != nil {
+					l.Error(handlerCtx, "handle message error", log.Err(err))
+					recordSpanError(span, err)
 				}
+
 				metrics.handlerSeconds.WithLabelValues(subject).Observe(time.Since(start).Seconds())
 				metrics.inflightReq.WithLabelValues(subject).Dec()
+				span.End()
 			}
 		}
 	}()
@@ -110,19 +121,28 @@ func (s *subscriber) Subscribe(ctx context.Context, subject string, handler Subs
 }
 
 func (s *subscriber) SubscribeQueue(ctx context.Context, subject string, queue string, handler SubscriberHandler) error {
-	l := log.With(log.String("subject", subject), log.String("queue", queue))
+	l := log.With(
+		log.String("subject", subject),
+		log.String("queue", queue),
+	)
 
-	_, err := s.nc.QueueSubscribe(subject, queue, func(msg *nats.Msg) {
+	_, err := s.nc.QueueSubscribe(subject, queue, func(msg *Msg) {
 		metrics.recvTotal.WithLabelValues(subject).Inc()
 		if msg != nil && msg.Data != nil {
 			metrics.recvBytes.WithLabelValues(subject).Observe(float64(len(msg.Data)))
 		}
+		// Извлекаем trace context из заголовков сообщения
+		handlerCtx, span := extractTraceContext(ctx, msg, fmt.Sprintf("nats.handle %s", subject))
+		defer span.End()
 
 		start := time.Now()
 		metrics.inflightReq.WithLabelValues(subject).Inc()
-		if err := handler.Handle(msg); err != nil {
-			l.Error(ctx, "handle message error", log.Err(err))
+
+		if err := handler.Handle(handlerCtx, msg); err != nil {
+			l.Error(handlerCtx, "handle message error", log.Err(err))
+			recordSpanError(span, err)
 		}
+
 		metrics.handlerSeconds.WithLabelValues(subject).Observe(time.Since(start).Seconds())
 		metrics.inflightReq.WithLabelValues(subject).Dec()
 	})

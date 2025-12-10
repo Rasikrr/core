@@ -34,9 +34,14 @@ func NewPublisher(addr string) (Publisher, error) {
 	}, nil
 }
 
-func (p *publisher) Publish(_ context.Context, subject string, m proto.Message) error {
+func (p *publisher) Publish(ctx context.Context, subject string, m proto.Message) error {
+	// Создаем span для публикации
+	ctx, span := startPublishSpan(ctx, subject)
+	defer span.End()
+
 	bb, err := proto.Marshal(m)
 	if err != nil {
+		recordSpanError(span, err)
 		return err
 	}
 
@@ -45,15 +50,23 @@ func (p *publisher) Publish(_ context.Context, subject string, m proto.Message) 
 	}
 	metrics.pubTotal.WithLabelValues(subject).Inc()
 
-	msg := &nats.Msg{
+	msg := &Msg{
 		Subject: subject,
 		Data:    bb,
 		Header:  make(nats.Header),
 	}
+
 	msg.Header.Set("Content-Type", "application/protobuf")
 	msg.Header.Set("Content-Encoding", "binary")
 
-	return p.conn.PublishMsg(msg)
+	// Инжектируем trace context в заголовки сообщения
+	injectTraceContext(ctx, msg)
+
+	err = p.conn.PublishMsg(msg)
+	if err != nil {
+		recordSpanError(span, err)
+	}
+	return err
 }
 
 func (p *publisher) Close(ctx context.Context) error {

@@ -20,7 +20,7 @@ var (
 	enabled atomic.Bool
 )
 
-func Init(ctx context.Context, cfg Config, appName string) error {
+func Init(ctx context.Context, cfg Config, appName, env string) error {
 	if !cfg.Enabled {
 		otel.SetTracerProvider(noop.NewTracerProvider())
 		return nil
@@ -52,6 +52,7 @@ func Init(ctx context.Context, cfg Config, appName string) error {
 			resource.NewWithAttributes(
 				semconv.SchemaURL,
 				semconv.ServiceNameKey.String(appName),
+				semconv.DeploymentEnvironmentNameKey.String(env),
 			),
 		)
 		if err != nil {

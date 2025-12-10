@@ -8,7 +8,7 @@ import (
 )
 
 func (a *App) initTracing(ctx context.Context) error {
-	err := tracing.Init(ctx, a.Config().Tracing, a.Config().AppName)
+	err := tracing.Init(ctx, a.Config().Tracing, a.Config().AppName, a.Config().Environment.String())
 	if err != nil {
 		return fmt.Errorf("failed to init tracing: %v", err)
 	}
