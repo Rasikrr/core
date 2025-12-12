@@ -67,6 +67,7 @@ func newGrpcServer() *grpc.Server {
 
 	unaryInterceptors := []grpc.UnaryServerInterceptor{
 		unaryPanicRecoveryInterceptor,
+		UnaryServerSentryInterceptor,
 		metrics.UnaryServer(),
 	}
 
