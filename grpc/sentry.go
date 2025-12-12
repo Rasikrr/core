@@ -22,8 +22,9 @@ func UnaryServerSentryInterceptor(
 		return handler(ctx, req)
 	}
 
-	hub := sentrySDK.CurrentHub().Clone()
-	ctx = sentrySDK.SetHubOnContext(ctx, hub)
+	ctx = sentry.SetHubOnCtx(ctx)
+
+	hub := sentry.GetHubFromContext(ctx)
 
 	service, method := split(info.FullMethod)
 	hub.Scope().SetContext("grpc", map[string]interface{}{
@@ -99,8 +100,8 @@ func StreamServerSentryInterceptor(
 	}
 
 	ctx := ss.Context()
-	hub := sentrySDK.CurrentHub().Clone()
-	ctx = sentrySDK.SetHubOnContext(ctx, hub)
+	ctx = sentry.SetHubOnCtx(ctx)
+	hub := sentry.GetHubFromContext(ctx)
 
 	service, method := split(info.FullMethod)
 	hub.Scope().SetContext("grpc", map[string]interface{}{

@@ -8,7 +8,7 @@ import (
 
 	"github.com/Rasikrr/core/interfaces"
 	"github.com/Rasikrr/core/log"
-
+	"github.com/Rasikrr/core/sentry"
 	"github.com/nats-io/nats.go"
 )
 
@@ -101,6 +101,10 @@ func (s *subscriber) Subscribe(ctx context.Context, subject string, handler Subs
 
 				// Извлекаем trace context из заголовков сообщения
 				handlerCtx, span := extractTraceContext(ctx, msg, fmt.Sprintf("nats.handle %s", subject))
+				handlerCtx = setSentryHubAndScope(handlerCtx, msg, "")
+
+				// Обработка паник с отправкой в Sentry
+				defer sentry.RecoverWithContext(handlerCtx)
 
 				start := time.Now()
 				metrics.inflightReq.WithLabelValues(subject).Inc()
@@ -133,6 +137,10 @@ func (s *subscriber) SubscribeQueue(ctx context.Context, subject string, queue s
 		}
 		// Извлекаем trace context из заголовков сообщения
 		handlerCtx, span := extractTraceContext(ctx, msg, fmt.Sprintf("nats.handle %s", subject))
+		handlerCtx = setSentryHubAndScope(handlerCtx, msg, queue)
+
+		// Обработка паник с отправкой в Sentry
+		defer sentry.RecoverWithContext(handlerCtx)
 		defer span.End()
 
 		start := time.Now()
