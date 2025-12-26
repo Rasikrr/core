@@ -13,7 +13,6 @@ import (
 func (s *Server) setupTracingMiddleware() {
 	if tracing.Enabled() {
 		s.router.Use(otelchi.Middleware(s.name))
-		return
 	}
 	s.router.Use(traceCtxMiddleware)
 }
