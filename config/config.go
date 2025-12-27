@@ -9,7 +9,7 @@ import (
 	"github.com/Rasikrr/core/brokers/nats"
 	"github.com/Rasikrr/core/cache/redis"
 	"github.com/Rasikrr/core/config/appenv"
-	"github.com/Rasikrr/core/database"
+	"github.com/Rasikrr/core/database/postgres"
 	"github.com/Rasikrr/core/enum"
 	"github.com/Rasikrr/core/grpc"
 	"github.com/Rasikrr/core/http"
@@ -35,7 +35,7 @@ type Config struct {
 	Logger   log.Config      `yaml:"log"`
 	HTTP     http.Config     `yaml:"http"`
 	GRPC     grpc.Config     `yaml:"grpc"`
-	Postgres database.Config `yaml:"postgres"`
+	Postgres postgres.Config `yaml:"postgres"`
 	Redis    redis.Config    `yaml:"redis"`
 	NATS     nats.Config     `yaml:"nats"`
 	Metrics  metrics.Config  `yaml:"metrics"`

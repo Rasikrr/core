@@ -9,7 +9,7 @@ import (
 	"github.com/Rasikrr/core/brokers/nats"
 	"github.com/Rasikrr/core/cache/redis"
 	"github.com/Rasikrr/core/config"
-	"github.com/Rasikrr/core/database"
+	"github.com/Rasikrr/core/database/postgres"
 	"github.com/Rasikrr/core/environment"
 	coreGrpc "github.com/Rasikrr/core/grpc"
 	"github.com/Rasikrr/core/http"
@@ -26,8 +26,8 @@ type App struct {
 	config *config.Config
 	redis  *redis.Client
 
-	postgres          *database.Postgres
-	postgresTXManager database.TXManager
+	postgres          *postgres.Postgres
+	postgresTXManager *postgres.TXManager
 
 	httpServer *http.Server
 	grpcServer *coreGrpc.Server
@@ -201,16 +201,16 @@ func (a *App) GrpcServer() *coreGrpc.Server {
 	return a.grpcServer
 }
 
-func (a *App) Postgres() *database.Postgres {
+func (a *App) Postgres() *postgres.Postgres {
 	if a.postgres == nil {
 		log.Fatalf(context.Background(), "postgres is not initialized or not required. please check your config")
 	}
 	return a.postgres
 }
 
-func (a *App) PostgresTXManager() database.TXManager {
+func (a *App) PostgresTXManager() *postgres.TXManager {
 	if a.postgresTXManager == nil {
-		log.Fatalf(context.Background(), "postgres tx manager is not initialized or not required. please check your config")
+		log.Fatalf(context.Background(), "postgres tx manager is not initialized")
 	}
 	return a.postgresTXManager
 }
