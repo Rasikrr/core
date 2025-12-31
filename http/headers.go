@@ -2,5 +2,5 @@ package http
 
 const (
 	ContentTypeHeader = "Content-Type"
-	TraceIDHeader     = "trace-id"
+	TraceIDHeader     = "Trace-id"
 )
