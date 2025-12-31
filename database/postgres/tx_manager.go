@@ -39,7 +39,7 @@ func NewTXManager(pool *pgxpool.Pool) *TXManager {
 	}
 }
 
-func (t *TXManager) Transaction(ctx context.Context, txOpts database.TXOptions, fn func(ctx context.Context) error) error {
+func (t *TXManager) Transaction(ctx context.Context, txOpts database.TXOptions, fn func(ctx context.Context) error) (err error) {
 	opts := pgx.TxOptions{
 		IsoLevel:   getPgxIsoLevel(txOpts.IsolationLevel),
 		AccessMode: pgx.ReadWrite,
@@ -49,19 +49,25 @@ func (t *TXManager) Transaction(ctx context.Context, txOpts database.TXOptions, 
 	}
 
 	tx, err := t.pool.BeginTx(ctx, opts)
-	ctx = context.WithValue(ctx, txCtxKey, tx)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	txCtx := context.WithValue(ctx, txCtxKey, tx)
 
 	defer func() {
 		if p := recover(); p != nil {
 			_ = tx.Rollback(ctx)
 			panic(p)
 		} else if err != nil {
-			_ = tx.Rollback(ctx)
+			rollbackErr := tx.Rollback(ctx)
+			if rollbackErr != nil {
+				err = errors.CombineErrors(err, errors.WithStack(rollbackErr))
+			}
 		} else {
 			err = errors.WithStack(tx.Commit(ctx))
 		}
 	}()
 
-	err = fn(ctx)
+	err = fn(txCtx)
 	return err
 }
