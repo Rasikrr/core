@@ -6,7 +6,6 @@ require (
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/cockroachdb/errors v1.12.0
 	github.com/exaring/otelpgx v0.9.3
-	github.com/georgysavva/scany/v2 v2.1.4
 	github.com/getsentry/sentry-go v0.40.0
 	github.com/getsentry/sentry-go/slog v0.40.0
 	github.com/go-chi/chi/v5 v5.2.1
@@ -17,6 +16,7 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jackc/pgx/v5 v5.7.4
 	github.com/joho/godotenv v1.5.1
+	github.com/lib/pq v1.10.0
 	github.com/mailru/easyjson v0.9.0
 	github.com/nats-io/nats.go v1.41.0
 	github.com/prometheus/client_golang v1.22.0

@@ -61,3 +61,7 @@ func NewRedisCache(ctx context.Context, cfg Config, prefix string) (*Client, err
 func (c *Client) genKey(k string) string {
 	return fmt.Sprintf("%s:%s", c.prefix, k)
 }
+
+func (c *Client) PureClient() *redis.Client {
+	return c.client
+}
