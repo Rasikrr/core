@@ -2,17 +2,12 @@ package config
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
 	"time"
 
 	"github.com/Rasikrr/core/log"
-)
-
-var (
-	errVariableNotFound = errors.New("variable is not required and not found, please check your config")
 )
 
 type Variable struct {
