@@ -30,7 +30,7 @@ type Config struct {
 	AppName     string           `yaml:"name"`
 	Environment enum.Environment `env:"ENVIRONMENT"`
 	Version     string           `desc:"git tag -> commit hash -> unknown"`
-	Variables   Variables        `yaml:"env"`
+	variables   Variables        `yaml:"env"`
 
 	Logger   log.Config      `yaml:"log"`
 	HTTP     http.Config     `yaml:"http"`
@@ -67,6 +67,10 @@ func Parse() (Config, error) {
 	return config, nil
 }
 
+func (c *Config) Variables() Variables {
+	return c.variables
+}
+
 func (c *Config) validate() error {
 	for _, v := range []interfaces.Validatable{
 		c.Sentry,
@@ -75,7 +79,7 @@ func (c *Config) validate() error {
 		c.Postgres,
 		c.Redis,
 		c.NATS,
-		c.Variables,
+		c.variables,
 		c.Metrics,
 	} {
 		if err := v.Validate(); err != nil {

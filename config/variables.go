@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/Rasikrr/core/log"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/Rasikrr/core/log"
 )
 
 var (
@@ -112,67 +113,67 @@ func (v Variables) Validate() error {
 	return nil
 }
 
-func (v Variables) GetString(name string) (string, error) {
+func (v Variables) GetString(name string) string {
 	val, ok := v[name]
 	if !ok {
-		return "", fmt.Errorf("variable %s not found", name)
+		return ""
 	}
 	str, ok := val.Value.(string)
 	if !ok {
-		return "", fmt.Errorf("variable %s is not string", name)
+		return ""
 	}
-	return str, nil
+	return str
 }
 
-func (v Variables) GetInt(name string) (int, error) {
+func (v Variables) GetInt(name string) int {
 	val, ok := v[name]
 	if !ok {
-		return 0, fmt.Errorf("variable %s not found", name)
+		return 0
 	}
 	parsed, ok := val.Value.(int)
 	if !ok {
-		return 0, fmt.Errorf("variable %s is not int", name)
+		return 0
 	}
-	return parsed, nil
+	return parsed
 }
 
-func (v Variables) GetFloat(name string) (float64, error) {
+func (v Variables) GetFloat(name string) float64 {
 	val, ok := v[name]
 	if !ok {
-		return 0, fmt.Errorf("variable %s not found", name)
+		return 0
 	}
 	parsed, ok := val.Value.(float64)
 	if !ok {
-		return 0, fmt.Errorf("variable %s is not float", name)
+		return 0
 	}
-	return parsed, nil
+	return parsed
 }
 
-func (v Variables) GetDuration(name string) (time.Duration, error) {
+func (v Variables) GetDuration(name string) time.Duration {
 	val, ok := v[name]
 	if !ok {
-		return 0, fmt.Errorf("variable %s not found", name)
+		return 0
 	}
 	dur, ok := val.Value.(time.Duration)
 	if !ok {
-		return 0, fmt.Errorf("variable %s is not duration", name)
+		return 0
 	}
-	return dur, nil
+	return dur
 }
 
-func (v Variables) GetBool(name string) (bool, error) {
+func (v Variables) GetBool(name string) bool {
 	val, ok := v[name]
 	if !ok {
-		return false, fmt.Errorf("variable %s not found", name)
+		return false
 	}
 
 	if !val.Required {
-		return false, errVariableNotFound
+		return false
 	}
 
 	parsed, ok := val.Value.(bool)
 	if !ok {
-		return false, fmt.Errorf("variable %s is not bool", name)
+		return false
 	}
-	return parsed, nil
+	return parsed
 }
