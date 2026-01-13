@@ -40,6 +40,10 @@ func NewTXManager(pool *pgxpool.Pool) *TXManager {
 }
 
 func (t *TXManager) Transaction(ctx context.Context, txOpts database.TXOptions, fn func(ctx context.Context) error) (err error) {
+	if _, ok := ctx.Value(txCtxKey).(pgx.Tx); ok {
+		return fn(ctx)
+	}
+
 	opts := pgx.TxOptions{
 		IsoLevel:   getPgxIsoLevel(txOpts.IsolationLevel),
 		AccessMode: pgx.ReadWrite,
