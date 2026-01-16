@@ -60,15 +60,15 @@ func (t *TXManager) Transaction(ctx context.Context, txOpts database.TXOptions, 
 
 	defer func() {
 		if p := recover(); p != nil {
-			_ = tx.Rollback(ctx)
+			_ = tx.Rollback(txCtx)
 			panic(p)
 		} else if err != nil {
-			rollbackErr := tx.Rollback(ctx)
+			rollbackErr := tx.Rollback(txCtx)
 			if rollbackErr != nil {
 				err = errors.CombineErrors(err, errors.WithStack(rollbackErr))
 			}
 		} else {
-			err = errors.WithStack(tx.Commit(ctx))
+			err = errors.WithStack(tx.Commit(txCtx))
 		}
 	}()
 
