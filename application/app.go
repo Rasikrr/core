@@ -27,7 +27,7 @@ type App struct {
 	redis  *redis.Client
 
 	postgres          *postgres.Postgres
-	postgresTXManager *postgres.TXManager
+	postgresTXManager *postgres.TxManager
 
 	httpServer *http.Server
 	grpcServer *coreGrpc.Server
@@ -208,7 +208,7 @@ func (a *App) Postgres() *postgres.Postgres {
 	return a.postgres
 }
 
-func (a *App) PostgresTXManager() *postgres.TXManager {
+func (a *App) PostgresTXManager() *postgres.TxManager {
 	if a.postgresTXManager == nil {
 		log.Fatalf(context.Background(), "postgres tx manager is not initialized")
 	}

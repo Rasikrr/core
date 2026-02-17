@@ -17,7 +17,7 @@ func (a *App) initPostgres(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	a.postgresTXManager = postgres.NewTXManager(a.postgres.Pool())
+	a.postgresTXManager = postgres.NewTxManager(a.postgres)
 
 	log.Info(ctx, "postgres initialized")
 

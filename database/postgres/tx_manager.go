@@ -3,74 +3,67 @@ package postgres
 import (
 	"context"
 
-	"github.com/Rasikrr/core/database"
-	"github.com/Rasikrr/core/enum"
 	"github.com/cockroachdb/errors"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type ctxKey string
+type txType struct{}
 
-const (
-	txCtxKey ctxKey = "core:postgres_tx"
+var (
+	txCtxKey = txType{}
 )
 
-var isoLevelMap = map[enum.IsoLevel]pgx.TxIsoLevel{
-	enum.IsoLevelReadCommited:   pgx.ReadCommitted,
-	enum.IsoLevelRepeatableRead: pgx.RepeatableRead,
-	enum.IsoLevelSerializable:   pgx.Serializable,
+type TxManager struct {
+	pool *Postgres
 }
 
-func getPgxIsoLevel(level enum.IsoLevel) pgx.TxIsoLevel {
-	if pgxIsoLevel, ok := isoLevelMap[level]; ok {
-		return pgxIsoLevel
-	}
-	return pgx.ReadCommitted
+func NewTxManager(pool *Postgres) *TxManager {
+	return &TxManager{pool: pool}
 }
 
-type TXManager struct {
-	pool *pgxpool.Pool
-}
-
-func NewTXManager(pool *pgxpool.Pool) *TXManager {
-	return &TXManager{
-		pool: pool,
-	}
-}
-
-func (t *TXManager) Transaction(ctx context.Context, txOpts database.TXOptions, fn func(ctx context.Context) error) (err error) {
-	if _, ok := ctx.Value(txCtxKey).(pgx.Tx); ok {
+func (txm *TxManager) Do(ctx context.Context, fn func(ctx context.Context) error) (err error) {
+	tx, ok := ctx.Value(txCtxKey).(pgx.Tx)
+	if ok {
+		// Транзакция уже есть, просто выполняем функцию
 		return fn(ctx)
 	}
 
 	opts := pgx.TxOptions{
-		IsoLevel:   getPgxIsoLevel(txOpts.IsolationLevel),
+		IsoLevel:   pgx.ReadCommitted,
 		AccessMode: pgx.ReadWrite,
 	}
-	if txOpts.ReadOnly {
-		opts.AccessMode = pgx.ReadOnly
-	}
 
-	tx, err := t.pool.BeginTx(ctx, opts)
+	tx, err = txm.pool.BeginTx(ctx, opts)
 	if err != nil {
-		return errors.WithStack(err)
+		return errors.Wrap(err, "failed to begin transaction")
 	}
-	txCtx := context.WithValue(ctx, txCtxKey, tx)
 
+	// ВАЖНО: defer выполняется в LIFO порядке, но recover должен быть первым (последним в коде),
+	// чтобы поймать панику до того, как сработает логика commit/rollback, если вы их разделяете.
+	// Но здесь у вас все в одной функции, это нормально.
 	defer func() {
 		if p := recover(); p != nil {
-			_ = tx.Rollback(txCtx)
-			panic(p)
-		} else if err != nil {
-			rollbackErr := tx.Rollback(txCtx)
-			if rollbackErr != nil {
-				err = errors.CombineErrors(err, errors.WithStack(rollbackErr))
+			_ = tx.Rollback(ctx)
+			panic(p) // Прокидываем панику дальше
+		}
+
+		// Логика завершения транзакции
+		if err != nil {
+			if rbErr := tx.Rollback(ctx); rbErr != nil {
+				// Комбинируем ошибку выполнения и ошибку роллбека
+				err = errors.CombineErrors(err, rbErr)
 			}
 		} else {
-			err = errors.WithStack(tx.Commit(txCtx))
+			// Если ошибок не было, пробуем закоммитить
+			// Поскольку 'err' именованный аргумент, это присвоение повлияет на return
+			if commitErr := tx.Commit(ctx); commitErr != nil {
+				err = errors.Wrap(commitErr, "failed to commit transaction")
+			}
 		}
 	}()
+
+	// Инжектим транзакцию в контекст
+	txCtx := context.WithValue(ctx, txCtxKey, tx)
 
 	err = fn(txCtx)
 	return err
