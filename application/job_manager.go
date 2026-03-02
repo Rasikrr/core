@@ -66,7 +66,7 @@ func (jm *JobManager) Start(_ context.Context) error {
 	return nil
 }
 
-// Stop останавливает менеджер и ждёт завершения всех запущенных джоб.
+// Close останавливает менеджер и ждёт завершения всех запущенных джоб.
 func (jm *JobManager) Close(ctx context.Context) error {
 	if !jm.started.Load() {
 		return nil

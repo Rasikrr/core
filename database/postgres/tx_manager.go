@@ -68,3 +68,8 @@ func (txm *TxManager) Do(ctx context.Context, fn func(ctx context.Context) error
 	err = fn(txCtx)
 	return err
 }
+
+func HasTx(ctx context.Context) bool {
+	_, ok := ctx.Value(txCtxKey).(pgx.Tx)
+	return ok
+}
