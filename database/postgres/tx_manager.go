@@ -22,7 +22,7 @@ func NewTxManager(pool *Postgres) *TxManager {
 }
 
 func (txm *TxManager) Do(ctx context.Context, fn func(ctx context.Context) error) (err error) {
-	tx, ok := ctx.Value(txCtxKey).(pgx.Tx)
+	ok := HasTx(ctx)
 	if ok {
 		// Транзакция уже есть, просто выполняем функцию
 		return fn(ctx)
@@ -32,8 +32,7 @@ func (txm *TxManager) Do(ctx context.Context, fn func(ctx context.Context) error
 		IsoLevel:   pgx.ReadCommitted,
 		AccessMode: pgx.ReadWrite,
 	}
-
-	tx, err = txm.pool.BeginTx(ctx, opts)
+	tx, err := txm.pool.BeginTx(ctx, opts)
 	if err != nil {
 		return errors.Wrap(err, "failed to begin transaction")
 	}
@@ -63,7 +62,7 @@ func (txm *TxManager) Do(ctx context.Context, fn func(ctx context.Context) error
 	}()
 
 	// Инжектим транзакцию в контекст
-	txCtx := context.WithValue(ctx, txCtxKey, tx)
+	txCtx := InjectTx(ctx, tx)
 
 	err = fn(txCtx)
 	return err
@@ -72,4 +71,8 @@ func (txm *TxManager) Do(ctx context.Context, fn func(ctx context.Context) error
 func HasTx(ctx context.Context) bool {
 	_, ok := ctx.Value(txCtxKey).(pgx.Tx)
 	return ok
+}
+
+func InjectTx(ctx context.Context, tx pgx.Tx) context.Context {
+	return context.WithValue(ctx, txCtxKey, tx)
 }
