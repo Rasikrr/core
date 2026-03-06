@@ -129,7 +129,7 @@ func (p *Postgres) CopyFrom(ctx context.Context, tableName pgx.Identifier, colum
 		elapsed := time.Since(start)
 		log.Debugf(ctx, "CopyFrom: %s; elapsed: %v; args: %v\n", tableName, elapsed, columnNames)
 	}()
-	return p.pool.CopyFrom(ctx, tableName, columnNames, rowSrc)
+	return p.GetQuerier(ctx).CopyFrom(ctx, tableName, columnNames, rowSrc)
 }
 
 func (p *Postgres) SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults {
@@ -138,7 +138,7 @@ func (p *Postgres) SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults
 		elapsed := time.Since(start)
 		log.Debugf(ctx, "SendBatch: %v; elapsed: %v\n", b, elapsed)
 	}()
-	return p.pool.SendBatch(ctx, b)
+	return p.GetQuerier(ctx).SendBatch(ctx, b)
 }
 
 func (p *Postgres) Close(ctx context.Context) error {
